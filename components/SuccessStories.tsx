@@ -1,16 +1,33 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Image from 'next/image'
+import Image, { StaticImageData } from 'next/image'
 import Link from 'next/link'
 
-const successStories = [
+// Import images statically - Next.js handles spaces automatically
+import jassyImage from '../public/minh (jassy) bui.jpeg'
+import julieImage from '../public/julie tran.jpeg'
+import ducVinhImage from '../public/duc vinh nguyen doan.jpeg'
+import syHungImage from '../public/syhung nguyen.png'
+import hugoImage from '../public/hugo lee.jpeg'
+import leonardImage from '../public/leonard lui.jpeg'
+
+interface SuccessStory {
+  id: number
+  name: string
+  role: string
+  dates: string
+  image: StaticImageData
+  achievements: { type: string; name: string }[]
+}
+
+const successStories: SuccessStory[] = [
   {
     id: 1,
     name: 'Minh Phuong "Jassy" Bui',
     role: 'Product Intern',
     dates: "Jan '24 - Jun '25",
-    photo: '/minh__jassy__bui.jpeg',
+    image: jassyImage,
     achievements: [
       { type: 'company', name: 'Bain & Company' },
       { type: 'university', name: 'LSE' },
@@ -21,7 +38,7 @@ const successStories = [
     name: 'Julie Tran',
     role: 'Social Media Lead',
     dates: "Jan '24 - Sep '24",
-    photo: '/julie_tran.jpeg',
+    image: julieImage,
     achievements: [
       { type: 'company', name: 'Ogilvy' },
       { type: 'university', name: 'NYU' },
@@ -32,7 +49,7 @@ const successStories = [
     name: 'Duc Vinh Nguyen Doan',
     role: 'Pathways + Instruction Lead',
     dates: "Dec '23 - May '25",
-    photo: '/duc_vinh_nguyen_doan.jpeg',
+    image: ducVinhImage,
     achievements: [
       { type: 'university', name: 'Yale' },
     ],
@@ -42,7 +59,7 @@ const successStories = [
     name: 'Sy Hung Nguyen',
     role: 'Pathways + Instruction Lead',
     dates: "Dec '23 - May '25",
-    photo: '/syhung_nguyen.png',
+    image: syHungImage,
     achievements: [
       { type: 'university', name: 'Brown' },
     ],
@@ -52,7 +69,7 @@ const successStories = [
     name: 'Hugo Lee',
     role: 'Brand Ambassador / Ops Lead',
     dates: "Jun '24 - Jun '25",
-    photo: '/hugo_lee.jpeg',
+    image: hugoImage,
     achievements: [
       { type: 'university', name: 'UC Berkeley' },
     ],
@@ -62,7 +79,7 @@ const successStories = [
     name: 'Leonard Lui',
     role: 'Brand Ambassador / Instructor',
     dates: "Dec '24 - Jun '25",
-    photo: '/leonard_lui.jpeg',
+    image: leonardImage,
     achievements: [
       { type: 'university', name: 'UCL' },
       { type: 'company', name: 'Zester' },
@@ -88,7 +105,7 @@ function AchievementBadge({ achievement }: { achievement: { type: string; name: 
 }
 
 // Profile Card Component
-function ProfileCard({ person, index }: { person: typeof successStories[0]; index: number }) {
+function ProfileCard({ person, index }: { person: SuccessStory; index: number }) {
   return (
     <motion.article
       initial={{ opacity: 0, y: 30 }}
@@ -126,7 +143,7 @@ function ProfileCard({ person, index }: { person: typeof successStories[0]; inde
           {/* Profile Photo */}
           <div className="relative w-[120px] h-[120px] sm:w-[150px] sm:h-[150px] mb-5 rounded-full overflow-hidden ring-2 ring-primary/30 group-hover:ring-primary/60 transition-all duration-300">
             <Image
-              src={person.photo}
+              src={person.image}
               alt={`${person.name} - MLV Alumni`}
               fill
               className="object-cover"

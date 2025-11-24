@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 
 const socialLinks = [
   {
@@ -83,14 +82,17 @@ export default function Footer() {
                   rel="noopener noreferrer"
                   className="inline-block mb-4"
                 >
-                  <div className="relative w-[120px] h-[40px]">
-                    <Image
-                      src="/logo-white.png"
-                      alt="MLV"
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
+                  <span
+                    className="text-3xl sm:text-4xl font-bold"
+                    style={{
+                      background: 'linear-gradient(135deg, #6AC670, #F2CF07)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    }}
+                  >
+                    MLV
+                  </span>
                 </a>
 
                 <p className="text-gray-400 max-w-md mb-6 text-sm sm:text-base">

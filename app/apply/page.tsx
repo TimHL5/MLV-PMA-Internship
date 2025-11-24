@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default function ApplyPage() {
   useEffect(() => {
@@ -50,15 +49,18 @@ export default function ApplyPage() {
               href="https://mlvignite.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="relative w-[100px] sm:w-[120px] h-[32px] sm:h-[40px]"
             >
-              <Image
-                src="/logo-white.png"
-                alt="MLV"
-                fill
-                className="object-contain"
-                priority
-              />
+              <span
+                className="text-2xl sm:text-3xl font-bold"
+                style={{
+                  background: 'linear-gradient(135deg, #6AC670, #F2CF07)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
+                MLV
+              </span>
             </Link>
 
             {/* Placeholder for symmetry */}

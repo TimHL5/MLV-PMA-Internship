@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Image from 'next/image'
 
 const navLinks = [
   { name: 'Overview', href: '#overview' },
@@ -48,16 +47,20 @@ export default function Navigation() {
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2 }}
-                className="relative w-[100px] sm:w-[120px] h-[32px] sm:h-[40px]"
+                className="flex items-center"
               >
-                {/* White logo for dark backgrounds */}
-                <Image
-                  src="/logo-white.png"
-                  alt="MLV"
-                  fill
-                  className="object-contain"
-                  priority
-                />
+                {/* Text-based logo */}
+                <span
+                  className="text-2xl sm:text-3xl font-bold"
+                  style={{
+                    background: 'linear-gradient(135deg, #6AC670, #F2CF07)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
+                  MLV
+                </span>
               </motion.div>
               <div className="hidden sm:block">
                 <span className="text-gray-400 text-sm ml-1">PMA 2026</span>
