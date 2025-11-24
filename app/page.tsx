@@ -9,6 +9,7 @@ import Compensation from '@/components/Compensation'
 import IdealCandidate from '@/components/IdealCandidate'
 import SuccessMetrics from '@/components/SuccessMetrics'
 import WeeklyBreakdown from '@/components/WeeklyBreakdown'
+import SuccessStories from '@/components/SuccessStories'
 import ApplicationProcess from '@/components/ApplicationProcess'
 import FAQ from '@/components/FAQ'
 import Footer from '@/components/Footer'
@@ -40,6 +41,9 @@ export default function Home() {
 
       {/* Weekly Breakdown */}
       <WeeklyBreakdown />
+
+      {/* Success Stories */}
+      <SuccessStories />
 
       {/* Application Process */}
       <ApplicationProcess />
