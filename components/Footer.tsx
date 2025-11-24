@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 
 const socialLinks = [
   {
@@ -30,15 +31,6 @@ const socialLinks = [
       </svg>
     ),
   },
-  {
-    name: 'YouTube',
-    href: 'https://youtube.com/@mlvstudent',
-    icon: (
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-      </svg>
-    ),
-  },
 ]
 
 const footerLinks = [
@@ -55,7 +47,7 @@ const footerLinks = [
     title: 'Resources',
     links: [
       { name: 'FAQs', href: '#faq' },
-      { name: 'Apply Now', href: '#application' },
+      { name: 'Apply Now', href: '/apply' },
       { name: 'Success Metrics', href: '#metrics' },
       { name: 'Ideal Candidate', href: '#candidate' },
     ],
@@ -68,16 +60,15 @@ export default function Footer() {
   }
 
   return (
-    <footer className="relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-dark-lighter" />
-      <div className="absolute inset-0 bg-gradient-to-t from-dark to-transparent" />
+    <footer className="relative overflow-hidden bg-dark-pure">
+      {/* Top gradient line */}
+      <div className="h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
 
       {/* Content */}
-      <div className="container-custom relative z-10">
+      <div className="container-custom px-4 sm:px-6 relative z-10">
         {/* Main footer content */}
-        <div className="py-16 border-b border-gray-800">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="py-12 sm:py-16 border-b border-gray-800">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             {/* Brand section */}
             <div className="lg:col-span-2">
               <motion.div
@@ -85,13 +76,24 @@ export default function Footer() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent-cyan flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">M</span>
+                {/* Logo */}
+                <a
+                  href="https://mlvignite.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block mb-4"
+                >
+                  <div className="relative w-[120px] h-[40px]">
+                    <Image
+                      src="/logo-white.png"
+                      alt="MLV"
+                      fill
+                      className="object-contain"
+                    />
                   </div>
-                  <span className="text-2xl font-bold text-white">MLV</span>
-                </div>
-                <p className="text-gray-400 max-w-md mb-6">
+                </a>
+
+                <p className="text-gray-400 max-w-md mb-6 text-sm sm:text-base">
                   Empowering the next generation of entrepreneurs through hands-on
                   experience, mentorship, and real business building.
                 </p>
@@ -104,9 +106,10 @@ export default function Footer() {
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-xl bg-dark flex items-center justify-center text-gray-400 hover:text-white hover:bg-primary/20 transition-all"
+                      className="w-10 h-10 rounded-xl bg-dark-lighter flex items-center justify-center text-gray-400 hover:text-primary hover:bg-primary/10 transition-all"
                       whileHover={{ scale: 1.1, y: -2 }}
                       whileTap={{ scale: 0.95 }}
+                      aria-label={social.name}
                     >
                       {social.icon}
                     </motion.a>
@@ -130,7 +133,7 @@ export default function Footer() {
                     <li key={link.name}>
                       <a
                         href={link.href}
-                        className="text-gray-400 hover:text-white transition-colors"
+                        className="text-gray-400 hover:text-primary transition-colors text-sm"
                       >
                         {link.name}
                       </a>
@@ -143,7 +146,7 @@ export default function Footer() {
         </div>
 
         {/* Contact section */}
-        <div className="py-8 border-b border-gray-800">
+        <div className="py-6 sm:py-8 border-b border-gray-800">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -151,7 +154,7 @@ export default function Footer() {
             className="flex flex-col md:flex-row items-center justify-between gap-6"
           >
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent-cyan flex items-center justify-center text-white font-bold text-xl">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-dark-pure font-bold text-lg sm:text-xl">
                 TL
               </div>
               <div>
@@ -159,23 +162,24 @@ export default function Footer() {
                 <p className="text-gray-400 text-sm">Program Director</p>
               </div>
             </div>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap justify-center gap-3">
               <a
                 href="mailto:tim@mlvstudent.com"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-dark border border-gray-700 text-gray-300 hover:text-white hover:border-primary transition-all"
+                className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-dark-lighter border border-gray-700 text-gray-300 hover:text-primary hover:border-primary transition-all text-sm"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                tim@mlvstudent.com
+                <span className="hidden sm:inline">tim@mlvstudent.com</span>
+                <span className="sm:hidden">Email</span>
               </a>
               <a
                 href="https://linkedin.com/in/timliu"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-dark border border-gray-700 text-gray-300 hover:text-white hover:border-primary transition-all"
+                className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-dark-lighter border border-gray-700 text-gray-300 hover:text-primary hover:border-primary transition-all text-sm"
               >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                 </svg>
                 LinkedIn
@@ -185,15 +189,15 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="py-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-gray-500 text-sm">
-            © {new Date().getFullYear()} MLV. All rights reserved.
+        <div className="py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-gray-500 text-sm text-center sm:text-left">
+            Made with <span className="text-primary">💚</span> by MLV Team &copy; {new Date().getFullYear()}
           </p>
 
           {/* Back to top button */}
           <motion.button
             onClick={scrollToTop}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-dark-lighter border border-gray-800 text-gray-400 hover:text-white hover:border-primary transition-all group"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-dark-lighter border border-gray-800 text-gray-400 hover:text-primary hover:border-primary transition-all group"
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -211,9 +215,6 @@ export default function Footer() {
           </motion.button>
         </div>
       </div>
-
-      {/* Decorative gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
     </footer>
   )
 }

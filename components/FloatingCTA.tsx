@@ -27,14 +27,14 @@ export default function FloatingCTA() {
           className="fixed bottom-6 right-6 z-50"
         >
           <motion.a
-            href="#application"
-            className="group relative flex items-center gap-3 px-6 py-4 rounded-full bg-gradient-to-r from-secondary to-accent-pink text-white font-semibold shadow-lg shadow-secondary/30"
+            href="/apply"
+            className="group relative flex items-center gap-3 px-6 py-4 rounded-full bg-gradient-to-r from-primary to-secondary text-dark-pure font-semibold shadow-lg shadow-primary/30"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             {/* Pulse effect */}
             <motion.span
-              className="absolute inset-0 rounded-full bg-secondary"
+              className="absolute inset-0 rounded-full bg-primary"
               animate={{
                 scale: [1, 1.2, 1],
                 opacity: [0.5, 0, 0.5],

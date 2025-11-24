@@ -9,33 +9,62 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // MLV Brand Colors
+        brand: {
+          green: '#6AC670',
+          yellow: '#F2CF07',
+          black: '#060606',
+          gray: '#484848',
+          'light-gray': '#F3F3F1',
+          white: '#FCFCFC',
+        },
+        // Primary (60% usage)
         primary: {
-          DEFAULT: '#7C3AED',
-          light: '#A78BFA',
-          dark: '#5B21B6',
+          DEFAULT: '#6AC670',
+          light: '#8BD490',
+          dark: '#4FA855',
         },
+        // Secondary accent
         secondary: {
-          DEFAULT: '#FF6B35',
-          light: '#FF8F66',
-          dark: '#E55A2B',
+          DEFAULT: '#F2CF07',
+          light: '#F5DA3A',
+          dark: '#D4B506',
         },
+        // Dark backgrounds
         dark: {
-          DEFAULT: '#0A0E27',
-          lighter: '#141938',
-          card: '#1A1F3D',
+          DEFAULT: '#1a1a2e',
+          lighter: '#252542',
+          card: '#2a2a4a',
+          pure: '#060606',
         },
+        // Light backgrounds
+        light: {
+          DEFAULT: '#FCFCFC',
+          gray: '#F3F3F1',
+        },
+        // Accent colors (10% usage)
         accent: {
-          blue: '#0066FF',
-          cyan: '#06B6D4',
-          pink: '#EC4899',
+          coral: '#FF6B6B',
+          teal: '#4ECDC4',
+          purple: '#C77DFF',
+        },
+        // Text colors
+        text: {
+          primary: '#060606',
+          secondary: '#484848',
+          light: '#F3F3F1',
+          muted: '#6B7280',
         },
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-        'hero-gradient': 'linear-gradient(135deg, #0A0E27 0%, #1A1F3D 50%, #0A0E27 100%)',
-        'card-gradient': 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
-        'glow-gradient': 'linear-gradient(90deg, #7C3AED, #06B6D4, #7C3AED)',
+        'hero-gradient': 'linear-gradient(135deg, #1a1a2e 0%, #252542 50%, #1a1a2e 100%)',
+        'card-gradient': 'linear-gradient(135deg, rgba(106, 198, 112, 0.1) 0%, rgba(242, 207, 7, 0.1) 100%)',
+        'cta-gradient': 'linear-gradient(135deg, #6AC670 0%, #F2CF07 100%)',
+        'border-gradient': 'linear-gradient(135deg, #6AC670, #F2CF07)',
+        'glow-gradient': 'linear-gradient(90deg, #6AC670, #F2CF07, #6AC670)',
+        'text-gradient': 'linear-gradient(135deg, #6AC670 0%, #F2CF07 100%)',
       },
       animation: {
         'float': 'float 6s ease-in-out infinite',
@@ -46,6 +75,8 @@ const config: Config = {
         'spin-slow': 'spin 8s linear infinite',
         'bounce-slow': 'bounce 3s ease-in-out infinite',
         'shimmer': 'shimmer 2s linear infinite',
+        'scroll': 'scroll 1.5s ease-in-out infinite',
+        'slide-in': 'slideIn 0.5s ease-out',
       },
       keyframes: {
         float: {
@@ -53,8 +84,8 @@ const config: Config = {
           '50%': { transform: 'translateY(-20px)' },
         },
         'pulse-glow': {
-          '0%, 100%': { boxShadow: '0 0 20px rgba(124, 58, 237, 0.5)' },
-          '50%': { boxShadow: '0 0 40px rgba(124, 58, 237, 0.8)' },
+          '0%, 100%': { boxShadow: '0 0 20px rgba(106, 198, 112, 0.5)' },
+          '50%': { boxShadow: '0 0 40px rgba(106, 198, 112, 0.8)' },
         },
         'gradient-x': {
           '0%, 100%': { backgroundPosition: '0% 50%' },
@@ -64,15 +95,30 @@ const config: Config = {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
         },
+        scroll: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(8px)' },
+        },
+        slideIn: {
+          '0%': { transform: 'translateX(100px)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        'glow': '0 0 40px rgba(124, 58, 237, 0.3)',
-        'glow-lg': '0 0 60px rgba(124, 58, 237, 0.4)',
+        'glow': '0 0 40px rgba(106, 198, 112, 0.3)',
+        'glow-lg': '0 0 60px rgba(106, 198, 112, 0.4)',
+        'glow-green': '0 0 30px rgba(106, 198, 112, 0.4)',
+        'glow-yellow': '0 0 30px rgba(242, 207, 7, 0.3)',
         'card': '0 8px 32px rgba(0, 0, 0, 0.3)',
         'card-hover': '0 16px 48px rgba(0, 0, 0, 0.4)',
+        'card-green': '0 8px 32px rgba(106, 198, 112, 0.2)',
+      },
+      borderRadius: {
+        '2xl': '16px',
+        '3xl': '24px',
       },
     },
   },
