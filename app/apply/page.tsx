@@ -1,19 +1,33 @@
-import type { Metadata } from 'next'
-import Script from 'next/script'
-import Link from 'next/link'
-import Image from 'next/image'
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Apply - MLV Product Management Associate Program 2026',
-  description: 'Apply now to join MLV\'s 8-month intensive Product Management Associate program. Build real startups across Hong Kong, Vietnam, and Singapore.',
-  openGraph: {
-    title: 'Apply - MLV PMA Program 2026',
-    description: 'Apply now to join MLV\'s Product Management Associate internship program.',
-    type: 'website',
-  },
-}
+import { useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function ApplyPage() {
+  useEffect(() => {
+    // Load Tally embed script
+    const script = document.createElement('script');
+    script.src = 'https://tally.so/widgets/embed.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      // @ts-ignore
+      if (typeof Tally !== 'undefined') {
+        // @ts-ignore
+        Tally.loadEmbeds();
+      }
+    };
+
+    return () => {
+      // Cleanup
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-dark flex flex-col">
       {/* Minimal Navbar */}
@@ -75,19 +89,6 @@ export default function ApplyPage() {
           }}
         />
       </main>
-
-      {/* Tally Script */}
-      <Script
-        src="https://tally.so/widgets/embed.js"
-        strategy="lazyOnload"
-        onLoad={() => {
-          // @ts-ignore
-          if (typeof Tally !== 'undefined') {
-            // @ts-ignore
-            Tally.loadEmbeds()
-          }
-        }}
-      />
     </div>
-  )
+  );
 }
