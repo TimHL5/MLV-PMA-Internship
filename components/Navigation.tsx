@@ -8,6 +8,7 @@ const navLinks = [
   { name: 'Timeline', href: '#timeline' },
   { name: 'Compensation', href: '#compensation' },
   { name: 'Who We Seek', href: '#candidate' },
+  { name: 'How to Apply', href: '#application' },
   { name: 'FAQs', href: '#faq' },
 ]
 

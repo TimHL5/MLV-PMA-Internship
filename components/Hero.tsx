@@ -201,11 +201,21 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="text-lg sm:text-xl md:text-2xl text-gray-400 mb-8 sm:mb-12 max-w-3xl mx-auto"
+          className="text-lg sm:text-xl md:text-2xl text-gray-400 mb-4 sm:mb-6 max-w-3xl mx-auto"
         >
           <span className="text-white font-medium">MLV Product Management Associate Program</span>
           <span className="mx-2 sm:mx-3 text-primary">|</span>
           <span>2026 Cohort</span>
+        </motion.p>
+        <motion.p
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.7 }}
+          className="text-sm sm:text-base text-gray-500 mb-8 sm:mb-12 max-w-2xl mx-auto"
+        >
+          For US college students with roots in Hong Kong, Vietnam, or Singapore.
+          <br className="hidden sm:block" />
+          Remote spring shadowing → On-ground summer venture building in Asia.
         </motion.p>
 
         {/* CTA Buttons - stack on mobile */}
@@ -250,19 +260,20 @@ export default function Hero() {
           </motion.a>
         </motion.div>
 
-        {/* Stats preview - 2x2 on mobile, 3x1 on desktop */}
+        {/* Stats preview - 2x2 on mobile, 4x1 on desktop */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1 }}
-          className="mt-12 sm:mt-16 grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8 max-w-2xl mx-auto"
+          className="mt-12 sm:mt-16 grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 max-w-3xl mx-auto"
         >
           {[
             { value: '8', label: 'Months' },
             { value: '$50K+', label: 'Revenue Target' },
-            { value: '4', label: 'Cities', className: 'col-span-2 sm:col-span-1' },
+            { value: '3', label: 'Countries' },
+            { value: '2', label: 'Phases' },
           ].map((stat, index) => (
-            <div key={index} className={`text-center ${stat.className || ''}`}>
+            <div key={index} className="text-center">
               <div className="text-3xl sm:text-4xl font-bold gradient-text">{stat.value}</div>
               <div className="text-sm text-gray-500 mt-1">{stat.label}</div>
             </div>

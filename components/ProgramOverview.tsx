@@ -150,9 +150,14 @@ export default function ProgramOverview() {
             <span className="text-white">Two Phases. </span>
             <span className="gradient-text">One Journey.</span>
           </h2>
-          <p className="text-gray-400 text-lg max-w-3xl mx-auto">
+          <p className="text-gray-400 text-lg max-w-3xl mx-auto mb-4">
             Our 8-month program is designed to transform you from an observer into an entrepreneur,
             culminating in launching your own revenue-generating venture.
+          </p>
+          <p className="text-gray-500 text-base max-w-2xl mx-auto">
+            <span className="text-primary font-medium">Spring:</span> Remote shadowing from your US campus
+            <span className="mx-2">→</span>
+            <span className="text-secondary font-medium">Summer:</span> On-ground in Hong Kong, Vietnam, or Singapore
           </p>
         </motion.div>
 

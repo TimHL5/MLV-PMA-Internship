@@ -318,9 +318,7 @@ export default function ApplicationProcess() {
               </p>
 
               <motion.a
-                href="https://forms.gle/example" // Replace with actual form link
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/apply"
                 className="glow-button inline-flex items-center gap-3"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}

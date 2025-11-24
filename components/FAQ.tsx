@@ -5,24 +5,50 @@ import { motion, AnimatePresence, useInView } from 'framer-motion'
 
 const faqData = [
   {
+    category: 'Location & Logistics',
+    icon: '🌏',
+    questions: [
+      {
+        q: 'Why do I need to be a US college student with Asia roots?',
+        a: 'This unique combination is central to our program design. US college students bring American business education and perspectives, while Asia roots (Hong Kong, Vietnam, Singapore) mean you have cultural understanding, language skills, and local connections. This dual perspective is invaluable for building products that bridge both markets. Plus, you\'re likely going home for summer anyway!',
+      },
+      {
+        q: 'What counts as "roots" in Asia?',
+        a: 'This includes: citizenship or permanent residency, family living there, having grown up there, or strong cultural/language ties. Essentially, you should have the ability to live and work there during summer without visa complications, and ideally have some local network to leverage.',
+      },
+      {
+        q: 'Do I need to physically be in Asia during summer?',
+        a: 'Yes, absolutely. The Summer Capstone (May-August) requires you to be on-ground in one of our hub cities: Hong Kong, Ho Chi Minh City, Hanoi, or Singapore. You\'ll be building and running programs locally, meeting customers face-to-face, and leading your Brand Ambassador team in person.',
+      },
+      {
+        q: 'Can the spring phase be done fully remote from my US campus?',
+        a: 'Yes! Spring Shadowing (January-April) is designed to be fully remote, working around your US class schedule. All meetings, trainings, and deliverables can be completed from anywhere with good internet.',
+      },
+      {
+        q: 'What if I\'m not from one of the four hub cities?',
+        a: 'If you\'re from a nearby area (e.g., Kuala Lumpur, Manila, Shenzhen), reach out to discuss. We may be able to accommodate other locations depending on logistics, but our primary support infrastructure is in HK, HCMC, Hanoi, and Singapore.',
+      },
+    ],
+  },
+  {
     category: 'Program',
     icon: '📚',
     questions: [
       {
         q: 'What exactly will I be doing during the Spring Shadowing phase?',
-        a: 'During Spring (January-May), you\'ll observe and learn from MLV\'s day-to-day operations. This includes attending team meetings, shadowing event logistics, studying our business model, and completing learning-focused deliverables like competitive analyses and operations playbooks. It\'s designed to give you a 360° view of how a startup operates.',
+        a: 'During Spring (January-April), you\'ll shadow MLV\'s Operations Leads remotely from your US campus. This includes attending team meetings, helping with customer acquisition research, shadowing speaker outreach, and assisting with Summer Ignite preparation. It\'s designed to give you a 360° view of how a startup operates before you build your own.',
       },
       {
         q: 'How is the Summer Capstone different from a traditional internship?',
-        a: 'Unlike traditional internships where you work on assigned tasks, the Summer Capstone has you building and launching your own initiative under MLV\'s umbrella. You\'ll go through the full entrepreneurial journey - customer discovery, MVP building, marketing, and actually acquiring paying customers. Think of it as your own startup with training wheels.',
+        a: 'Unlike traditional internships where you work on assigned tasks, the Summer Capstone has you building and launching your own initiative under MLV\'s umbrella. You\'ll be on-ground in Asia, leading a team of Brand Ambassadors, and going through the full entrepreneurial journey - customer discovery, MVP building, marketing, and actually acquiring paying customers.',
       },
       {
         q: 'What kind of initiative will I be building in the summer?',
-        a: 'You\'ll build an educational program for high school students in your city. The exact format (workshop, course, camp, etc.) will be determined by your customer research. You\'ll have creative freedom to design something that solves a real problem for students in your market.',
+        a: 'You\'ll build an entrepreneurial project for students in your city. The exact format (workshop, course, camp, community, etc.) will be determined by your customer research during May. You\'ll have creative freedom to design something that solves a real problem for students in your market, with MLV\'s brand and resources behind you.',
       },
       {
-        q: 'Is this a remote or in-person program?',
-        a: 'The program is hybrid. Spring shadowing is mostly remote with occasional in-person events. Summer requires more in-person presence as you\'ll be running programs in your city. We\'ll work with you to accommodate your situation.',
+        q: 'What are the two phases and how do they connect?',
+        a: 'Phase 1 (Spring Shadowing, Jan-Apr): Remote learning - shadow Operations Leads, understand MLV\'s business model, help with existing programs. Phase 2 (Summer Capstone, May-Aug): Full-time on-ground - build and launch your own project in Asia. Spring prepares you with skills and context; summer is where you apply them.',
       },
     ],
   },
