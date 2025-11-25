@@ -56,7 +56,7 @@ const successStories: SuccessStory[] = [
     name: 'Hung (Liam) Nguyen',
     role: 'Pathways + Instruction Lead',
     dates: "Dec '23 - May '25",
-    image: '/syhung nguyen.png',
+    image: '/liam hung nguyen.jpeg',
     linkedin: 'https://www.linkedin.com/in/liam-hung-nguyen-691717222/',
     achievements: [
       { type: 'university', name: 'Brown' },
