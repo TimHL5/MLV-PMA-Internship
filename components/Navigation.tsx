@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
+
+// Import logo with static import - Next.js handles spaces in filenames automatically
+import logoWhite from '../public/MLV Logo (white).png'
 
 const navLinks = [
   { name: 'Overview', href: '#overview' },
@@ -50,18 +54,14 @@ export default function Navigation() {
                 transition={{ duration: 0.2 }}
                 className="flex items-center"
               >
-                {/* Text-based logo */}
-                <span
-                  className="text-2xl sm:text-3xl font-bold"
-                  style={{
-                    background: 'linear-gradient(135deg, #6AC670, #F2CF07)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
-                  MLV
-                </span>
+                <Image
+                  src={logoWhite}
+                  alt="MLV Logo"
+                  width={100}
+                  height={33}
+                  className="cursor-pointer hover:opacity-80 transition-opacity h-8 sm:h-9 w-auto"
+                  priority
+                />
               </motion.div>
               <div className="hidden sm:block">
                 <span className="text-gray-400 text-sm ml-1">PMA 2026</span>
