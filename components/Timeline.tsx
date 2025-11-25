@@ -1,6 +1,7 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const timelineData = [
   {
@@ -76,6 +77,7 @@ const timelineData = [
       'Validate project idea with target audience interviews',
       'Recruit non-TA Brand Ambassadors to join your team at city hubs',
     ],
+    keyFocus: 'Customer discovery and team building in your home city',
     deliverable: 'Validated capstone project proposal with initial customer research',
     note: 'Full-time begins - Selected TAs and Ops Leads focus on running Ignite Summer 2026',
   },
@@ -92,6 +94,7 @@ const timelineData = [
       'Create go-to-market strategy and marketing materials',
       'Set up operations infrastructure (payments, CRM, communications)',
     ],
+    keyFocus: 'Building and preparing for launch',
     deliverable: 'MVP ready to launch + Brand Ambassador team activated',
     revenueGoal: 'Begin customer acquisition',
   },
@@ -108,6 +111,7 @@ const timelineData = [
       'Drive customer acquisition through multiple channels',
       'Iterate based on early customer feedback',
     ],
+    keyFocus: 'Execution and customer acquisition',
     deliverable: 'First paying customers + refined product offering',
     revenueGoal: 'Generate measurable revenue and track unit economics',
   },
@@ -124,21 +128,25 @@ const timelineData = [
       'Track financial performance (revenue, CAC, profitability)',
       'Prepare final presentation and operational handoff',
     ],
+    keyFocus: 'Scaling and demonstrating sustainable model',
     deliverable: 'Final revenue report + Operational playbook + Team presentation',
     revenueGoal: 'Achieve revenue targets and demonstrate sustainable model',
   },
 ]
 
-// Timeline Card Component
+// Interactive Timeline Card Component
 function TimelineCard({
   item,
   index,
+  isExpanded,
+  onToggle,
 }: {
   item: typeof timelineData[0]
   index: number
+  isExpanded: boolean
+  onToggle: () => void
 }) {
   const isGreen = item.phaseColor === 'green'
-  const isEven = index % 2 === 0
 
   return (
     <motion.div
@@ -146,156 +154,164 @@ function TimelineCard({
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ delay: index * 0.1, duration: 0.5 }}
-      className="relative flex items-start gap-4 md:gap-8 mb-8 md:mb-12"
+      className="mb-4"
     >
-      {/* Timeline dot and connector */}
-      <div className="flex flex-col items-center">
-        {/* Dot */}
-        <div
-          className={`relative z-10 w-4 h-4 md:w-5 md:h-5 rounded-full flex-shrink-0 ${
-            isGreen ? 'bg-primary' : 'bg-secondary'
-          }`}
-          style={{
-            boxShadow: isGreen
-              ? '0 0 20px rgba(106, 198, 112, 0.5)'
-              : '0 0 20px rgba(242, 207, 7, 0.5)',
-          }}
-        />
-        {/* Connector line (horizontal) */}
-        <div
-          className="hidden md:block absolute left-[10px] top-[10px] w-8 h-[2px]"
-          style={{
-            background: isGreen
-              ? 'linear-gradient(90deg, #6AC670, rgba(106, 198, 112, 0.3))'
-              : 'linear-gradient(90deg, #F2CF07, rgba(242, 207, 7, 0.3))',
-          }}
-        />
-      </div>
-
-      {/* Card */}
       <div
-        className="flex-1 rounded-xl p-5 md:p-6 lg:p-8 backdrop-blur-sm"
+        className={`
+          border rounded-xl overflow-hidden cursor-pointer transition-all duration-300
+          ${isExpanded
+            ? 'border-2 shadow-[0_0_30px_rgba(106,198,112,0.3)]'
+            : 'border hover:border-opacity-60'
+          }
+        `}
         style={{
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: `1px solid ${isGreen ? 'rgba(106, 198, 112, 0.3)' : 'rgba(242, 207, 7, 0.3)'}`,
+          borderColor: isExpanded
+            ? (isGreen ? '#6AC670' : '#F2CF07')
+            : (isGreen ? 'rgba(106, 198, 112, 0.4)' : 'rgba(242, 207, 7, 0.4)'),
+          backgroundColor: 'rgba(255, 255, 255, 0.02)',
         }}
+        onClick={onToggle}
       >
-        {/* Card Header */}
-        <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
-          <div>
-            {/* Month and Year */}
-            <h3
-              className="text-2xl md:text-3xl lg:text-4xl font-bold inline"
+        {/* Collapsed View - Always Visible */}
+        <div className="p-4 md:p-6 flex items-center justify-between">
+          <div className="flex items-center gap-4 md:gap-6">
+            {/* Month Badge */}
+            <div
+              className="px-4 md:px-6 py-2 md:py-3 rounded-lg font-bold text-base md:text-lg"
               style={{
-                background: 'linear-gradient(135deg, #6AC670, #F2CF07)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
+                backgroundColor: isGreen ? 'rgba(106, 198, 112, 0.2)' : 'rgba(242, 207, 7, 0.2)',
+                color: isGreen ? '#6AC670' : '#F2CF07',
               }}
             >
               {item.month}
-            </h3>
-            <span className="text-gray-500 text-base md:text-lg ml-2">{item.year}</span>
+            </div>
+
+            {/* Milestone */}
+            <div className="hidden sm:block">
+              <h3 className="text-white font-bold text-lg md:text-xl mb-1">
+                {item.milestone}
+              </h3>
+              <p className="text-gray-400 text-sm">
+                {item.phase} • {item.year}
+              </p>
+            </div>
           </div>
 
-          {/* Phase Badge */}
-          <span
-            className={`px-3 py-1 rounded-full text-xs md:text-sm font-bold uppercase tracking-wider ${
-              isGreen
-                ? 'bg-primary text-dark-pure'
-                : 'bg-secondary text-dark-pure'
-            }`}
+          {/* Mobile milestone */}
+          <div className="sm:hidden flex-1 ml-3">
+            <h3 className="text-white font-bold text-sm leading-tight">
+              {item.milestone}
+            </h3>
+          </div>
+
+          {/* Expand/Collapse Icon */}
+          <motion.div
+            animate={{ rotate: isExpanded ? 180 : 0 }}
+            transition={{ duration: 0.3 }}
+            className="text-gray-400 flex-shrink-0"
           >
-            {item.phase}
-          </span>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </motion.div>
         </div>
 
-        {/* Milestone */}
-        <h4 className="text-lg md:text-xl font-semibold text-white mb-4">
-          {item.milestone}
-          <div
-            className="h-0.5 mt-2 w-24"
-            style={{
-              background: isGreen
-                ? 'linear-gradient(90deg, #6AC670, transparent)'
-                : 'linear-gradient(90deg, #F2CF07, transparent)',
-            }}
-          />
-        </h4>
-
-        {/* Activities */}
-        <ul className="space-y-2 md:space-y-3 mb-5">
-          {item.activities.map((activity, i) => (
-            <li key={i} className="flex items-start gap-2 md:gap-3">
-              <svg
-                className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 mt-0.5 ${
-                  isGreen ? 'text-primary' : 'text-secondary'
-                }`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+        {/* Expanded View - Animated */}
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
+              <div
+                className="px-4 md:px-6 pb-6 border-t"
+                style={{ borderColor: isGreen ? 'rgba(106, 198, 112, 0.2)' : 'rgba(242, 207, 7, 0.2)' }}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span className="text-gray-400 text-sm md:text-base">{activity}</span>
-            </li>
-          ))}
-        </ul>
+                {/* Note (for May) */}
+                {item.note && (
+                  <div className="mt-4 p-3 rounded-lg bg-secondary/10 border border-secondary/20">
+                    <p className="text-secondary text-sm italic">{item.note}</p>
+                  </div>
+                )}
 
-        {/* Key Focus (Spring months) */}
-        {item.keyFocus && !item.deliverable && (
-          <div
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
-              isGreen
-                ? 'bg-primary/20 text-primary border border-primary/30'
-                : 'bg-secondary/20 text-secondary border border-secondary/30'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            Key Focus: {item.keyFocus}
-          </div>
-        )}
+                {/* Activities */}
+                <div className="mt-4 md:mt-6">
+                  <h4 className="text-white font-semibold mb-3">What You&apos;ll Do:</h4>
+                  <ul className="space-y-2">
+                    {item.activities.map((activity, idx) => (
+                      <li key={idx} className="flex items-start gap-3">
+                        <span style={{ color: isGreen ? '#6AC670' : '#F2CF07' }}>✓</span>
+                        <span className="text-gray-300 text-sm md:text-base">{activity}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-        {/* Note (for May) */}
-        {item.note && (
-          <div className="mb-4 p-3 rounded-lg bg-secondary/10 border border-secondary/20">
-            <p className="text-secondary text-sm italic">{item.note}</p>
-          </div>
-        )}
+                {/* Key Focus */}
+                {item.keyFocus && (
+                  <div
+                    className="mt-4 md:mt-6 p-4 rounded-lg"
+                    style={{ backgroundColor: isGreen ? 'rgba(106, 198, 112, 0.1)' : 'rgba(242, 207, 7, 0.1)' }}
+                  >
+                    <p className="text-sm font-semibold mb-1" style={{ color: isGreen ? '#6AC670' : '#F2CF07' }}>
+                      KEY FOCUS:
+                    </p>
+                    <p className="text-white text-sm md:text-base">{item.keyFocus}</p>
+                  </div>
+                )}
 
-        {/* Deliverable (Summer months) */}
-        {item.deliverable && (
-          <div className="mb-3 p-3 md:p-4 rounded-lg bg-secondary/10 border border-secondary/30">
-            <div className="flex items-center gap-2 mb-1">
-              <svg className="w-4 h-4 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
-              <span className="text-xs uppercase tracking-wider text-secondary font-semibold">Deliverable</span>
-            </div>
-            <p className="text-white text-sm md:text-base">{item.deliverable}</p>
-          </div>
-        )}
+                {/* Deliverable (Summer months) */}
+                {item.deliverable && (
+                  <div
+                    className="mt-4 p-4 rounded-lg border"
+                    style={{
+                      backgroundColor: isGreen ? 'rgba(106, 198, 112, 0.05)' : 'rgba(242, 207, 7, 0.05)',
+                      borderColor: isGreen ? 'rgba(106, 198, 112, 0.3)' : 'rgba(242, 207, 7, 0.3)',
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <svg className="w-4 h-4" style={{ color: isGreen ? '#6AC670' : '#F2CF07' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      </svg>
+                      <span className="text-xs uppercase tracking-wider font-semibold" style={{ color: isGreen ? '#6AC670' : '#F2CF07' }}>
+                        Deliverable
+                      </span>
+                    </div>
+                    <p className="text-white text-sm md:text-base">{item.deliverable}</p>
+                  </div>
+                )}
 
-        {/* Revenue Goal (Summer months) */}
-        {item.revenueGoal && (
-          <div className="p-3 md:p-4 rounded-lg bg-gradient-to-r from-primary/10 to-secondary/10 border border-secondary/30">
-            <div className="flex items-center gap-2 mb-1">
-              <svg className="w-4 h-4 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="text-xs uppercase tracking-wider text-secondary font-semibold">Revenue Goal</span>
-            </div>
-            <p className="text-white text-sm md:text-base">{item.revenueGoal}</p>
-          </div>
-        )}
+                {/* Revenue Goal (Summer months) */}
+                {item.revenueGoal && (
+                  <div className="mt-4 p-4 rounded-lg bg-gradient-to-r from-primary/10 to-secondary/10 border border-secondary/30">
+                    <div className="flex items-center gap-2 mb-1">
+                      <svg className="w-4 h-4 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-xs uppercase tracking-wider text-secondary font-semibold">Revenue Goal</span>
+                    </div>
+                    <p className="text-white text-sm md:text-base">{item.revenueGoal}</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   )
 }
 
 export default function Timeline() {
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
+
+  const toggleCard = (index: number) => {
+    setExpandedIndex(expandedIndex === index ? null : index)
+  }
+
   return (
     <section id="timeline" className="section-padding relative overflow-hidden">
       {/* Background */}
@@ -306,7 +322,7 @@ export default function Timeline() {
       <div className="absolute top-1/4 -left-40 w-[400px] sm:w-[500px] h-[400px] sm:h-[500px] bg-primary/10 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 -right-40 w-[400px] sm:w-[500px] h-[400px] sm:h-[500px] bg-secondary/10 rounded-full blur-3xl" />
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6">
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6">
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -323,7 +339,7 @@ export default function Timeline() {
             <span className="gradient-text">Transformation</span>
           </h2>
           <p className="text-gray-400 text-sm sm:text-base md:text-lg max-w-3xl mx-auto mb-8">
-            From observer to entrepreneur. Your complete journey unfolds below.
+            From observer to entrepreneur. Click any month to explore the details.
           </p>
 
           {/* Phase Legend */}
@@ -350,23 +366,29 @@ export default function Timeline() {
           </div>
         </motion.div>
 
-        {/* Timeline Container */}
-        <div className="relative">
-          {/* Vertical Timeline Line */}
-          <div
-            className="absolute left-[7px] md:left-[9px] top-0 bottom-0 w-[3px] rounded-full"
-            style={{
-              background: 'linear-gradient(180deg, #6AC670 0%, #6AC670 50%, #F2CF07 50%, #F2CF07 100%)',
-            }}
-          />
-
-          {/* Timeline Cards */}
-          <div className="relative">
-            {timelineData.map((item, index) => (
-              <TimelineCard key={item.id} item={item} index={index} />
-            ))}
-          </div>
+        {/* Interactive Timeline Cards */}
+        <div className="space-y-0">
+          {timelineData.map((item, index) => (
+            <TimelineCard
+              key={item.id}
+              item={item}
+              index={index}
+              isExpanded={expandedIndex === index}
+              onToggle={() => toggleCard(index)}
+            />
+          ))}
         </div>
+
+        {/* Helper Text */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="text-center text-gray-500 text-sm mt-8"
+        >
+          Click any month to expand details
+        </motion.p>
 
         {/* End marker */}
         <motion.div

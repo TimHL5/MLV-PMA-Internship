@@ -8,7 +8,7 @@ import Link from 'next/link'
 import jassyImage from '../public/minh (jassy) bui.jpeg'
 import julieImage from '../public/julie tran.jpeg'
 import ducVinhImage from '../public/duc vinh nguyen doan.jpeg'
-import syHungImage from '../public/syhung nguyen.png'
+import liamImage from '../public/syhung nguyen.png'
 import hugoImage from '../public/hugo lee.jpeg'
 import leonardImage from '../public/leonard lui.jpeg'
 
@@ -18,6 +18,7 @@ interface SuccessStory {
   role: string
   dates: string
   image: StaticImageData
+  linkedin: string
   achievements: { type: string; name: string }[]
 }
 
@@ -28,6 +29,7 @@ const successStories: SuccessStory[] = [
     role: 'Product Intern',
     dates: "Jan '24 - Jun '25",
     image: jassyImage,
+    linkedin: 'https://www.linkedin.com/in/jassybui/',
     achievements: [
       { type: 'company', name: 'Bain & Company' },
       { type: 'university', name: 'LSE' },
@@ -39,6 +41,7 @@ const successStories: SuccessStory[] = [
     role: 'Social Media Lead',
     dates: "Jan '24 - Sep '24",
     image: julieImage,
+    linkedin: 'https://www.linkedin.com/in/julie-tnc/',
     achievements: [
       { type: 'company', name: 'Ogilvy' },
       { type: 'university', name: 'NYU' },
@@ -50,16 +53,18 @@ const successStories: SuccessStory[] = [
     role: 'Pathways + Instruction Lead',
     dates: "Dec '23 - May '25",
     image: ducVinhImage,
+    linkedin: 'https://www.linkedin.com/in/duc-vinh-nguyen-doan-6b93bb246/',
     achievements: [
       { type: 'university', name: 'Yale' },
     ],
   },
   {
     id: 4,
-    name: 'Sy Hung Nguyen',
+    name: 'Hung (Liam) Nguyen',
     role: 'Pathways + Instruction Lead',
     dates: "Dec '23 - May '25",
-    image: syHungImage,
+    image: liamImage,
+    linkedin: 'https://www.linkedin.com/in/liam-hung-nguyen-691717222/',
     achievements: [
       { type: 'university', name: 'Brown' },
     ],
@@ -70,6 +75,7 @@ const successStories: SuccessStory[] = [
     role: 'Brand Ambassador / Ops Lead',
     dates: "Jun '24 - Jun '25",
     image: hugoImage,
+    linkedin: 'https://www.linkedin.com/in/hugojlee/',
     achievements: [
       { type: 'university', name: 'UC Berkeley' },
     ],
@@ -80,6 +86,7 @@ const successStories: SuccessStory[] = [
     role: 'Brand Ambassador / Instructor',
     dates: "Dec '24 - Jun '25",
     image: leonardImage,
+    linkedin: 'https://www.linkedin.com/in/leonard-lui-015448239/',
     achievements: [
       { type: 'university', name: 'UCL' },
       { type: 'company', name: 'Zester' },
@@ -104,7 +111,7 @@ function AchievementBadge({ achievement }: { achievement: { type: string; name: 
   )
 }
 
-// Profile Card Component
+// Profile Card Component - Now clickable with LinkedIn
 function ProfileCard({ person, index }: { person: SuccessStory; index: number }) {
   return (
     <motion.article
@@ -114,61 +121,81 @@ function ProfileCard({ person, index }: { person: SuccessStory; index: number })
       transition={{ delay: index * 0.1, duration: 0.5 }}
       className="group"
     >
-      <motion.div
-        className="relative h-full rounded-2xl overflow-hidden"
-        whileHover={{ y: -8 }}
-        transition={{ duration: 0.3 }}
+      <a
+        href={person.linkedin}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block"
       >
-        {/* Gradient border */}
-        <div
-          className="absolute inset-0 rounded-2xl p-[1px] transition-all duration-300 group-hover:p-[2px]"
-          style={{
-            background: 'linear-gradient(135deg, #6AC670, #F2CF07)',
-            opacity: 0.5,
-          }}
+        <motion.div
+          className="relative h-full rounded-2xl overflow-hidden cursor-pointer"
+          whileHover={{ y: -8 }}
+          transition={{ duration: 0.3 }}
         >
-          <div className="w-full h-full rounded-2xl bg-[#1a1a2e]" />
-        </div>
-
-        {/* Glow effect on hover */}
-        <div
-          className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-30 blur-xl transition-opacity duration-300"
-          style={{
-            background: 'linear-gradient(135deg, #6AC670, #F2CF07)',
-          }}
-        />
-
-        {/* Content */}
-        <div className="relative z-10 p-6 sm:p-8 flex flex-col items-center text-center">
-          {/* Profile Photo */}
-          <div className="relative w-[120px] h-[120px] sm:w-[150px] sm:h-[150px] mb-5 rounded-full overflow-hidden ring-2 ring-primary/30 group-hover:ring-primary/60 transition-all duration-300">
-            <Image
-              src={person.image}
-              alt={`${person.name} - MLV Alumni`}
-              fill
-              className="object-cover"
-              sizes="150px"
-            />
+          {/* Gradient border */}
+          <div
+            className="absolute inset-0 rounded-2xl p-[1px] transition-all duration-300 group-hover:p-[2px]"
+            style={{
+              background: 'linear-gradient(135deg, #6AC670, #F2CF07)',
+              opacity: 0.5,
+            }}
+          >
+            <div className="w-full h-full rounded-2xl bg-[#1a1a2e]" />
           </div>
 
-          {/* Name */}
-          <h3 className="text-xl sm:text-2xl font-bold text-white mb-1">
-            {person.name}
-          </h3>
+          {/* Glow effect on hover */}
+          <div
+            className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-30 blur-xl transition-opacity duration-300"
+            style={{
+              background: 'linear-gradient(135deg, #6AC670, #F2CF07)',
+            }}
+          />
 
-          {/* Role and Dates */}
-          <p className="text-sm text-gray-400 mb-5">
-            {person.role} <span className="text-gray-600">•</span> {person.dates}
-          </p>
+          {/* Content */}
+          <div className="relative z-10 p-6 sm:p-8 flex flex-col items-center text-center">
+            {/* Profile Photo with LinkedIn overlay */}
+            <div className="relative w-[120px] h-[120px] sm:w-[150px] sm:h-[150px] mb-5">
+              <div className="relative w-full h-full rounded-full overflow-hidden ring-2 ring-primary/30 group-hover:ring-primary/60 transition-all duration-300">
+                <Image
+                  src={person.image}
+                  alt={`${person.name} - MLV Alumni`}
+                  fill
+                  className="object-cover"
+                  sizes="150px"
+                />
+              </div>
+              {/* LinkedIn icon overlay on hover */}
+              <div className="absolute inset-0 bg-[#6AC670]/90 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                </svg>
+              </div>
+            </div>
 
-          {/* Achievements */}
-          <div className="flex flex-wrap justify-center gap-2">
-            {person.achievements.map((achievement, i) => (
-              <AchievementBadge key={i} achievement={achievement} />
-            ))}
+            {/* Name */}
+            <h3 className="text-xl sm:text-2xl font-bold text-white mb-1 group-hover:text-[#6AC670] transition-colors">
+              {person.name}
+            </h3>
+
+            {/* Role and Dates */}
+            <p className="text-sm text-gray-400 mb-5">
+              {person.role} <span className="text-gray-600">•</span> {person.dates}
+            </p>
+
+            {/* Achievements */}
+            <div className="flex flex-wrap justify-center gap-2">
+              {person.achievements.map((achievement, i) => (
+                <AchievementBadge key={i} achievement={achievement} />
+              ))}
+            </div>
+
+            {/* LinkedIn hint */}
+            <p className="text-xs text-gray-500 mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+              Click to view LinkedIn →
+            </p>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </a>
     </motion.article>
   )
 }
