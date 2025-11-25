@@ -377,3 +377,27 @@ a, button {
 .float-delay-1 { animation-delay: 0s; }
 .float-delay-2 { animation-delay: 2s; }
 .float-delay-3 { animation-delay: 4s; }
+
+/* Reduced motion support for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .hero-particles,
+  .animated-gradient,
+  .animate-glow-pulse,
+  .animate-scroll-indicator {
+    animation: none !important;
+  }
+
+  /* Disable Three.js canvas animations */
+  canvas {
+    animation: none !important;
+  }
+}

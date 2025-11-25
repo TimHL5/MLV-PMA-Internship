@@ -128,7 +128,7 @@ const faqData = [
       },
       {
         q: 'Who can I contact with more questions?',
-        a: 'Reach out to Tim Liu at tim@mlvstudent.com or connect on LinkedIn. We\'re happy to answer any questions not covered here.',
+        a: 'Reach out to Tim Liu at timothy.liu@mlvignite.com or connect on LinkedIn. We\'re happy to answer any questions not covered here.',
       },
     ],
   },
@@ -400,8 +400,8 @@ export default function FAQ() {
               <p className="text-white font-medium">Still have questions?</p>
               <p className="text-gray-400 text-sm">
                 Reach out to Tim Liu at{' '}
-                <a href="mailto:tim@mlvstudent.com" className="text-primary hover:text-primary-light">
-                  tim@mlvstudent.com
+                <a href="mailto:timothy.liu@mlvignite.com" className="text-primary hover:text-primary-light">
+                  timothy.liu@mlvignite.com
                 </a>
               </p>
             </div>

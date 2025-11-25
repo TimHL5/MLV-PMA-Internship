@@ -12,20 +12,21 @@ function FloatingShapes() {
 
   useFrame((state) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.05
+      // Slowed down rotation for smoother, less jarring animation
+      groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.015
     }
   })
 
   return (
     <group ref={groupRef}>
-      {/* Large sphere - main focal point (brand green) */}
-      <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
+      {/* Large sphere - main focal point (brand green) - Slowed down for smoother animation */}
+      <Float speed={0.6} rotationIntensity={0.2} floatIntensity={0.4}>
         <Sphere args={[1.5, 64, 64]} position={[-4, 2, -5]}>
           <MeshDistortMaterial
             color="#6AC670"
             attach="material"
-            distort={0.4}
-            speed={2}
+            distort={0.3}
+            speed={0.8}
             roughness={0.2}
             metalness={0.8}
             transparent
@@ -34,8 +35,8 @@ function FloatingShapes() {
         </Sphere>
       </Float>
 
-      {/* Icosahedron (brand yellow) */}
-      <Float speed={1.5} rotationIntensity={1} floatIntensity={0.8}>
+      {/* Icosahedron (brand yellow) - Reduced speed */}
+      <Float speed={0.5} rotationIntensity={0.4} floatIntensity={0.3}>
         <Icosahedron args={[0.8, 1]} position={[4, -1, -3]}>
           <meshStandardMaterial
             color="#F2CF07"
@@ -47,8 +48,8 @@ function FloatingShapes() {
         </Icosahedron>
       </Float>
 
-      {/* Torus (accent teal) */}
-      <Float speed={2.5} rotationIntensity={2} floatIntensity={1.2}>
+      {/* Torus (accent teal) - Reduced speed */}
+      <Float speed={0.7} rotationIntensity={0.6} floatIntensity={0.4}>
         <Torus args={[0.6, 0.2, 16, 100]} position={[3, 2, -4]} rotation={[Math.PI / 4, 0, 0]}>
           <meshStandardMaterial
             color="#4ECDC4"
@@ -60,9 +61,9 @@ function FloatingShapes() {
         </Torus>
       </Float>
 
-      {/* Small spheres scattered */}
-      {[...Array(8)].map((_, i) => (
-        <Float key={i} speed={1 + i * 0.2} floatIntensity={0.5 + i * 0.1}>
+      {/* Small spheres scattered - Reduced count from 8 to 5 and slowed down */}
+      {[...Array(5)].map((_, i) => (
+        <Float key={i} speed={0.3 + i * 0.08} floatIntensity={0.2 + i * 0.05}>
           <Sphere
             args={[0.15 + Math.random() * 0.2, 32, 32]}
             position={[
@@ -82,8 +83,8 @@ function FloatingShapes() {
         </Float>
       ))}
 
-      {/* Rotating boxes (brand green) */}
-      <Float speed={1.8} rotationIntensity={1.5} floatIntensity={0.6}>
+      {/* Rotating boxes (brand green) - Reduced speed */}
+      <Float speed={0.5} rotationIntensity={0.5} floatIntensity={0.25}>
         <Box args={[0.5, 0.5, 0.5]} position={[-3, -2, -4]} rotation={[0.5, 0.5, 0]}>
           <meshStandardMaterial
             color="#6AC670"
@@ -117,17 +118,32 @@ export default function Hero() {
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8])
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [smoothMousePosition, setSmoothMousePosition] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      // Reduced mouse sensitivity for more subtle effect
       setMousePosition({
-        x: (e.clientX / window.innerWidth - 0.5) * 20,
-        y: (e.clientY / window.innerHeight - 0.5) * 20,
+        x: (e.clientX / window.innerWidth - 0.5) * 8,
+        y: (e.clientY / window.innerHeight - 0.5) * 8,
       })
     }
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
+
+  // Smooth mouse position interpolation for gentler transitions
+  useEffect(() => {
+    const smoothing = 0.05 // Lower = smoother/slower
+    const animate = () => {
+      setSmoothMousePosition(prev => ({
+        x: prev.x + (mousePosition.x - prev.x) * smoothing,
+        y: prev.y + (mousePosition.y - prev.y) * smoothing,
+      }))
+    }
+    const interval = setInterval(animate, 16) // ~60fps
+    return () => clearInterval(interval)
+  }, [mousePosition])
 
   return (
     <section
@@ -140,21 +156,33 @@ export default function Hero() {
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 bg-grid-pattern opacity-50" />
 
-      {/* Radial gradient orbs - brand colors */}
+      {/* Radial gradient orbs - brand colors - Subtle mouse follow with smooth transitions */}
       <motion.div
         className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full pointer-events-none"
         style={{
           background: 'radial-gradient(circle, rgba(106, 198, 112, 0.15) 0%, transparent 70%)',
-          x: mousePosition.x * 0.5,
-          y: mousePosition.y * 0.5,
+        }}
+        animate={{
+          x: smoothMousePosition.x * 0.15,
+          y: smoothMousePosition.y * 0.15,
+        }}
+        transition={{
+          duration: 0.8,
+          ease: "easeOut"
         }}
       />
       <motion.div
         className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full pointer-events-none"
         style={{
           background: 'radial-gradient(circle, rgba(242, 207, 7, 0.1) 0%, transparent 70%)',
-          x: mousePosition.x * -0.3,
-          y: mousePosition.y * -0.3,
+        }}
+        animate={{
+          x: smoothMousePosition.x * -0.1,
+          y: smoothMousePosition.y * -0.1,
+        }}
+        transition={{
+          duration: 0.8,
+          ease: "easeOut"
         }}
       />
 

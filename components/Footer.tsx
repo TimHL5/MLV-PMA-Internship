@@ -1,6 +1,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
+
+// Import logo with static import - Next.js handles spaces in filenames automatically
+import logoWhite from '../public/MLV Logo (white).png'
 
 const socialLinks = [
   {
@@ -80,19 +84,15 @@ export default function Footer() {
                   href="https://mlvignite.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block mb-4"
+                  className="inline-block mb-4 hover:opacity-80 transition-opacity"
                 >
-                  <span
-                    className="text-3xl sm:text-4xl font-bold"
-                    style={{
-                      background: 'linear-gradient(135deg, #6AC670, #F2CF07)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                    }}
-                  >
-                    MLV
-                  </span>
+                  <Image
+                    src={logoWhite}
+                    alt="MLV Logo"
+                    width={120}
+                    height={40}
+                    className="h-10 sm:h-12 w-auto"
+                  />
                 </a>
 
                 <p className="text-gray-400 max-w-md mb-6 text-sm sm:text-base">
@@ -166,17 +166,17 @@ export default function Footer() {
             </div>
             <div className="flex flex-wrap justify-center gap-3">
               <a
-                href="mailto:tim@mlvstudent.com"
+                href="mailto:timothy.liu@mlvignite.com"
                 className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-dark-lighter border border-gray-700 text-gray-300 hover:text-primary hover:border-primary transition-all text-sm"
               >
                 <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                <span className="hidden sm:inline">tim@mlvstudent.com</span>
+                <span className="hidden sm:inline">timothy.liu@mlvignite.com</span>
                 <span className="sm:hidden">Email</span>
               </a>
               <a
-                href="https://linkedin.com/in/timliu"
+                href="https://www.linkedin.com/in/timothyhaiyiliu/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-dark-lighter border border-gray-700 text-gray-300 hover:text-primary hover:border-primary transition-all text-sm"
