@@ -1,23 +1,16 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Image, { StaticImageData } from 'next/image'
+import Image from 'next/image'
 import Link from 'next/link'
 
-// Import images statically - Next.js handles spaces automatically
-import jassyImage from '../public/minh (jassy) bui.jpeg'
-import julieImage from '../public/julie tran.jpeg'
-import ducVinhImage from '../public/duc vinh nguyen doan.jpeg'
-import liamImage from '../public/syhung nguyen.png'
-import hugoImage from '../public/hugo lee.jpeg'
-import leonardImage from '../public/leonard lui.jpeg'
-
+// Use string paths instead of static imports to avoid webpack issues with spaces in filenames
 interface SuccessStory {
   id: number
   name: string
   role: string
   dates: string
-  image: StaticImageData
+  image: string
   linkedin: string
   achievements: { type: string; name: string }[]
 }
@@ -28,7 +21,7 @@ const successStories: SuccessStory[] = [
     name: 'Minh Phuong "Jassy" Bui',
     role: 'Product Intern',
     dates: "Jan '24 - Jun '25",
-    image: jassyImage,
+    image: '/minh (jassy) bui.jpeg',
     linkedin: 'https://www.linkedin.com/in/jassybui/',
     achievements: [
       { type: 'company', name: 'Bain & Company' },
@@ -40,7 +33,7 @@ const successStories: SuccessStory[] = [
     name: 'Julie Tran',
     role: 'Social Media Lead',
     dates: "Jan '24 - Sep '24",
-    image: julieImage,
+    image: '/julie tran.jpeg',
     linkedin: 'https://www.linkedin.com/in/julie-tnc/',
     achievements: [
       { type: 'company', name: 'Ogilvy' },
@@ -52,7 +45,7 @@ const successStories: SuccessStory[] = [
     name: 'Duc Vinh Nguyen Doan',
     role: 'Pathways + Instruction Lead',
     dates: "Dec '23 - May '25",
-    image: ducVinhImage,
+    image: '/duc vinh nguyen doan.jpeg',
     linkedin: 'https://www.linkedin.com/in/duc-vinh-nguyen-doan-6b93bb246/',
     achievements: [
       { type: 'university', name: 'Yale' },
@@ -63,7 +56,7 @@ const successStories: SuccessStory[] = [
     name: 'Hung (Liam) Nguyen',
     role: 'Pathways + Instruction Lead',
     dates: "Dec '23 - May '25",
-    image: liamImage,
+    image: '/syhung nguyen.png',
     linkedin: 'https://www.linkedin.com/in/liam-hung-nguyen-691717222/',
     achievements: [
       { type: 'university', name: 'Brown' },
@@ -74,7 +67,7 @@ const successStories: SuccessStory[] = [
     name: 'Hugo Lee',
     role: 'Brand Ambassador / Ops Lead',
     dates: "Jun '24 - Jun '25",
-    image: hugoImage,
+    image: '/hugo lee.jpeg',
     linkedin: 'https://www.linkedin.com/in/hugojlee/',
     achievements: [
       { type: 'university', name: 'UC Berkeley' },
@@ -85,7 +78,7 @@ const successStories: SuccessStory[] = [
     name: 'Leonard Lui',
     role: 'Brand Ambassador / Instructor',
     dates: "Dec '24 - Jun '25",
-    image: leonardImage,
+    image: '/leonard lui.jpeg',
     linkedin: 'https://www.linkedin.com/in/leonard-lui-015448239/',
     achievements: [
       { type: 'university', name: 'UCL' },

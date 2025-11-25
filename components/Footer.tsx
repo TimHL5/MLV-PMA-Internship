@@ -3,8 +3,8 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 
-// Import logo with static import - Next.js handles spaces in filenames automatically
-import logoWhite from '../public/MLV Logo (white).png'
+// Use string path for logo to avoid webpack issues with spaces in filenames
+const logoPath = '/MLV Logo (white).png'
 
 const socialLinks = [
   {
@@ -87,7 +87,7 @@ export default function Footer() {
                   className="inline-block mb-4 hover:opacity-80 transition-opacity"
                 >
                   <Image
-                    src={logoWhite}
+                    src={logoPath}
                     alt="MLV Logo"
                     width={120}
                     height={40}

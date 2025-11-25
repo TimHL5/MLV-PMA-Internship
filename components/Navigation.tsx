@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 
-// Import logo with static import - Next.js handles spaces in filenames automatically
-import logoWhite from '../public/MLV Logo (white).png'
+// Use string path for logo to avoid webpack issues with spaces in filenames
+const logoPath = '/MLV Logo (white).png'
 
 const navLinks = [
   { name: 'Overview', href: '#overview' },
@@ -55,7 +55,7 @@ export default function Navigation() {
                 className="flex items-center"
               >
                 <Image
-                  src={logoWhite}
+                  src={logoPath}
                   alt="MLV Logo"
                   width={100}
                   height={33}
