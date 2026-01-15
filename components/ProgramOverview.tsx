@@ -3,62 +3,55 @@
 import { motion } from 'framer-motion'
 
 const cohort = [
-  { name: 'Tina', role: 'Marketing', school: 'Skidmore College' },
-  { name: 'Phuong Linh', role: 'Legacy', school: 'Minerva University' },
-  { name: 'Kim Ha', role: 'Legacy / Marketing', school: 'UC Irvine' },
-  { name: 'Vanessa', role: 'Finance', school: 'Purdue University' },
-  { name: 'Tiffany', role: 'AI Product', school: 'UMich Ann Arbor' },
+  { name: 'Tina', role: 'Marketing', school: 'Skidmore' },
+  { name: 'Phuong Linh', role: 'Legacy', school: 'Minerva' },
+  { name: 'Kim Ha', role: 'Legacy', school: 'UC Irvine' },
+  { name: 'Vanessa', role: 'Finance', school: 'Purdue' },
+  { name: 'Tiffany', role: 'AI Product', school: 'UMich' },
 ]
 
 const products = [
   {
     name: 'MLV Ignite',
-    tag: 'FLAGSHIP',
-    description: '2-week intensive bootcamp. Students build real ventures with expert mentorship, ending with a live pitch day.',
-    price: '$650 / student',
+    description: '2-week intensive bootcamp with live pitch day',
+    metric: '$650/student',
   },
   {
     name: 'MLV Sprint',
-    tag: 'GATEWAY',
-    description: '3-day entrepreneurship conference. Fast-paced intro to startup thinking, accessible entry point to MLV.',
-    price: '$50 / student',
+    description: '3-day entrepreneurship conference',
+    metric: '$50/student',
   },
   {
-    name: 'Intern Capstone',
-    tag: 'YOUR PROJECT',
-    description: 'Founder-supported product built by YOU. Designed to generate revenue while giving you real ownership.',
-    price: 'Goal: $50K revenue',
+    name: 'Capstone Project',
+    description: 'Your venture, your ownership',
+    metric: '$50K goal',
   },
   {
-    name: 'MLV AI Co-Pilot',
-    tag: '2026 FOCUS',
-    description: 'AI-powered learning companion. Guides students through startup fundamentals with personalized feedback.',
-    price: '1000 MAU target',
+    name: 'AI Co-Pilot',
+    description: 'Personalized learning companion',
+    metric: '2026 focus',
   },
 ]
 
 export default function ProgramOverview() {
   return (
-    <section id="program" className="py-20 sm:py-28 bg-dark-pure relative">
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(106,198,112,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(106,198,112,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
-      
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6">
-        {/* What is MLV */}
+    <section id="program" className="py-24 bg-[#0a0a0a]">
+      <div className="max-w-4xl mx-auto px-6">
+        {/* About */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mb-20"
+          className="mb-24"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">What is MLV?</h2>
-          <p className="text-gray-400 text-lg max-w-3xl mb-8">
-            Ambitious students in Asia lack affordable, accessible entrepreneurship education. 
-            Programs like Launch cost $10,000+ and are US-focused.
+          <h2 className="text-sm font-medium text-[#6AC670] uppercase tracking-wider mb-4">About MLV</h2>
+          <p className="text-2xl sm:text-3xl text-white font-light leading-relaxed mb-6">
+            Hands-on entrepreneurship programs for students across Asia, 
+            at a fraction of the cost of US alternatives.
           </p>
-          <p className="text-gray-300 text-lg max-w-3xl">
-            <span className="text-brand-green font-medium">Our solution:</span> Hands-on entrepreneurship programs 
-            for high school students across Asia at a fraction of the cost, taught by people who understand 
-            both US and Asian markets.
+          <p className="text-[#666] leading-relaxed">
+            We&apos;ve launched 50+ startups, generated $50K+ in revenue, and run 7 program cycles 
+            across Hong Kong, Ho Chi Minh City, and Hanoi.
           </p>
         </motion.div>
 
@@ -67,87 +60,55 @@ export default function ProgramOverview() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mb-20"
+          className="mb-24"
         >
-          <h3 className="text-2xl font-bold text-white mb-2">2026 PM Associate Class</h3>
-          <p className="text-gray-500 mb-6">Hong Kong • Ho Chi Minh City • Hanoi</p>
+          <h3 className="text-sm font-medium text-[#888] uppercase tracking-wider mb-8">2026 Cohort</h3>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-5 gap-4">
             {cohort.map((person, i) => (
               <motion.div
                 key={person.name}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-dark-card/50 border border-brand-green/10 rounded-xl p-4 text-center"
+                transition={{ delay: i * 0.05 }}
+                className="text-center"
               >
-                <div className="w-12 h-12 bg-brand-green/20 rounded-full mx-auto mb-3 flex items-center justify-center">
-                  <span className="text-brand-green font-bold text-lg">{person.name[0]}</span>
+                <div className="w-12 h-12 bg-[#1a1a1a] rounded-full mx-auto mb-3 flex items-center justify-center border border-[#222]">
+                  <span className="text-[#6AC670] font-medium">{person.name[0]}</span>
                 </div>
-                <p className="text-white font-medium text-sm">{person.name}</p>
-                <p className="text-brand-green text-xs mt-1">{person.role}</p>
-                <p className="text-gray-500 text-xs mt-1">{person.school}</p>
+                <p className="text-white text-sm font-medium">{person.name}</p>
+                <p className="text-[#555] text-xs mt-0.5">{person.role}</p>
               </motion.div>
             ))}
           </div>
         </motion.div>
 
-        {/* Product Verticals */}
+        {/* Products */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h3 className="text-2xl font-bold text-white mb-2">What MLV Offers</h3>
-          <p className="text-gray-500 mb-6">Product verticals you&apos;ll work on</p>
+          <h3 className="text-sm font-medium text-[#888] uppercase tracking-wider mb-8">What You&apos;ll Build</h3>
           
           <div className="grid sm:grid-cols-2 gap-4">
             {products.map((product, i) => (
               <motion.div
                 key={product.name}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-dark-card/30 border border-brand-green/10 rounded-xl p-5 hover:border-brand-green/30 transition-colors"
+                transition={{ delay: i * 0.05 }}
+                className="p-5 bg-[#111] rounded-xl border border-[#1a1a1a] hover:border-[#252525] transition-colors"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <h4 className="text-white font-semibold">{product.name}</h4>
-                  <span className="text-xs px-2 py-1 bg-brand-yellow/10 text-brand-yellow rounded-full">
-                    {product.tag}
-                  </span>
+                <div className="flex items-start justify-between mb-2">
+                  <h4 className="text-white font-medium">{product.name}</h4>
+                  <span className="text-xs text-[#6AC670]">{product.metric}</span>
                 </div>
-                <p className="text-gray-400 text-sm mb-3">{product.description}</p>
-                <p className="text-brand-green text-sm font-medium">{product.price}</p>
+                <p className="text-[#666] text-sm">{product.description}</p>
               </motion.div>
             ))}
-          </div>
-        </motion.div>
-
-        {/* 2026 Vision */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-20 text-center"
-        >
-          <h3 className="text-2xl font-bold text-white mb-6">2026 Vision</h3>
-          <p className="text-gray-400 mb-8">Scale through technology, lead through community</p>
-          
-          <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto">
-            <div>
-              <div className="text-3xl font-bold text-brand-green">$100K</div>
-              <div className="text-xs text-gray-500 mt-1">Revenue Goal</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-brand-yellow">50+</div>
-              <div className="text-xs text-gray-500 mt-1">Students</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white">10M+</div>
-              <div className="text-xs text-gray-500 mt-1">Impressions</div>
-            </div>
           </div>
         </motion.div>
       </div>

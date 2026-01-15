@@ -1,27 +1,28 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function Footer() {
   return (
-    <footer className="py-12 bg-dark-pure border-t border-brand-green/10">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
+    <footer className="py-16 bg-[#0a0a0a] border-t border-[#1a1a1a]">
+      <div className="max-w-4xl mx-auto px-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-8">
+          <div className="flex items-center gap-6">
             <Image
               src="/MLV Logo (white).png"
               alt="MLV"
-              width={60}
-              height={24}
-              className="opacity-60"
+              width={50}
+              height={20}
+              className="opacity-50"
             />
-            <span className="text-gray-600 text-sm">PM Associate Program 2026</span>
+            <span className="text-[#333] text-sm">© 2026</span>
           </div>
           
-          <div className="flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-8 text-sm">
             <a 
               href="mailto:tim@mlvignite.com" 
-              className="text-gray-500 hover:text-brand-green transition-colors"
+              className="text-[#555] hover:text-white transition-colors"
             >
               tim@mlvignite.com
             </a>
@@ -29,17 +30,17 @@ export default function Footer() {
               href="https://mlvignite.com" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-gray-500 hover:text-brand-green transition-colors"
+              className="text-[#555] hover:text-white transition-colors"
             >
               mlvignite.com
             </a>
+            <Link
+              href="/internal"
+              className="text-[#6AC670] hover:text-[#5ab560] transition-colors"
+            >
+              Intern Portal
+            </Link>
           </div>
-        </div>
-        
-        <div className="mt-8 pt-8 border-t border-gray-800 text-center">
-          <p className="text-gray-600 text-xs">
-            Scale through technology, lead through community
-          </p>
         </div>
       </div>
     </footer>

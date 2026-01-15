@@ -6,138 +6,110 @@ import Link from 'next/link'
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-dark-pure">
-      {/* Simple gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-dark-pure via-dark-lighter/50 to-dark-pure" />
+    <section className="relative min-h-[90vh] flex flex-col items-center justify-center bg-[#0a0a0a]">
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#0a0a0a]" />
       
-      {/* Subtle grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(106,198,112,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(106,198,112,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
-
       {/* Content */}
-      <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto pt-24 pb-12">
+      <div className="relative z-10 text-center px-6 max-w-3xl mx-auto">
         {/* Logo */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="mb-12"
         >
           <Image
             src="/MLV Logo (white).png"
             alt="MLV"
-            width={100}
-            height={40}
-            className="mx-auto"
+            width={80}
+            height={32}
+            className="mx-auto opacity-90"
           />
         </motion.div>
 
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-green/10 border border-brand-green/30 mb-8"
-        >
-          <span className="w-2 h-2 rounded-full bg-brand-green animate-pulse" />
-          <span className="text-sm text-brand-green font-medium">2026 PM Associate Program</span>
-        </motion.div>
-
-        {/* Headline */}
+        {/* Main headline */}
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight"
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="text-[2.75rem] sm:text-5xl md:text-6xl font-semibold text-white mb-6 leading-[1.1] tracking-tight"
         >
-          Welcome to{' '}
-          <span className="text-brand-green">faMLV</span>
+          Product Management
+          <br />
+          <span className="text-[#6AC670]">Associate Program</span>
         </motion.h1>
 
         {/* Subtitle */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="text-lg sm:text-xl text-gray-400 mb-4 max-w-2xl mx-auto"
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="text-lg text-[#888] mb-4 font-light"
         >
-          Building the next generation of entrepreneurial leaders across Asia
+          January — August 2026
         </motion.p>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-base text-gray-500 mb-10 max-w-xl mx-auto"
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="text-base text-[#666] mb-10 max-w-md mx-auto leading-relaxed"
         >
-          8 months. 3 phases. From shadowing to launching your own venture.
+          8 months building real products across Hong Kong, 
+          Ho Chi Minh City, and Hanoi.
         </motion.p>
 
         {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
+          transition={{ duration: 0.8, delay: 0.5 }}
         >
           <Link
-            href="/apply"
-            className="px-8 py-4 bg-brand-green hover:bg-primary-dark text-dark-pure font-semibold rounded-xl transition-all duration-200 hover:scale-105"
+            href="/internal"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#6AC670] text-[#0a0a0a] text-sm font-medium rounded-lg hover:bg-[#5ab560] transition-colors"
           >
-            Apply Now
+            Intern Portal
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
           </Link>
-          <a
-            href="#program"
-            className="px-8 py-4 border border-brand-green/30 text-brand-green hover:bg-brand-green/10 font-medium rounded-xl transition-all duration-200"
-          >
-            Learn More
-          </a>
         </motion.div>
 
-        {/* Quick Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-2xl mx-auto"
-        >
-          {[
-            { value: '$50K+', label: 'Revenue to Date' },
-            { value: '50+', label: 'Startups Launched' },
-            { value: '7', label: 'Program Cycles' },
-            { value: '3', label: 'Cities in Asia' },
-          ].map((stat, i) => (
-            <div key={i} className="text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-brand-green">{stat.value}</div>
-              <div className="text-xs text-gray-500 mt-1">{stat.label}</div>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* Backed by */}
+        {/* Stats */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="mt-12 text-center"
+          transition={{ duration: 0.8, delay: 0.7 }}
+          className="mt-20 flex items-center justify-center gap-12 sm:gap-16"
         >
-          <p className="text-xs text-gray-600 uppercase tracking-wider mb-2">Backed by</p>
-          <p className="text-sm text-gray-500">SSC Venture Partners • Do Ventures • Thien Viet Securities</p>
+          {[
+            { value: '$50K+', label: 'Revenue' },
+            { value: '50+', label: 'Startups' },
+            { value: '3', label: 'Cities' },
+          ].map((stat, i) => (
+            <div key={i} className="text-center">
+              <div className="text-2xl font-semibold text-white">{stat.value}</div>
+              <div className="text-xs text-[#555] mt-1 uppercase tracking-wider">{stat.label}</div>
+            </div>
+          ))}
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
+      {/* Scroll hint */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
+        transition={{ delay: 1.2 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2"
       >
         <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="w-6 h-10 border-2 border-gray-600 rounded-full flex justify-center pt-2"
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="w-5 h-8 border border-[#333] rounded-full flex justify-center pt-2"
         >
-          <div className="w-1 h-2 bg-gray-600 rounded-full" />
+          <div className="w-1 h-1.5 bg-[#444] rounded-full" />
         </motion.div>
       </motion.div>
     </section>

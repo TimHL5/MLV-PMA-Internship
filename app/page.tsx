@@ -10,7 +10,7 @@ import Footer from '@/components/Footer'
 
 export default function Home() {
   return (
-    <main className="relative">
+    <main className="bg-[#0a0a0a]">
       <Navigation />
       <Hero />
       <ProgramOverview />
