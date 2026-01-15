@@ -1,13 +1,44 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 
 const cohort = [
-  { name: 'Tina', role: 'Marketing', school: 'Skidmore' },
-  { name: 'Phuong Linh', role: 'Legacy', school: 'Minerva' },
-  { name: 'Kim Ha', role: 'Legacy', school: 'UC Irvine' },
-  { name: 'Vanessa', role: 'Finance', school: 'Purdue' },
-  { name: 'Tiffany', role: 'AI Product', school: 'UMich' },
+  { 
+    name: 'Tina', 
+    role: 'Marketing', 
+    school: 'Skidmore',
+    image: '/tina.jpeg',
+    linkedin: 'https://www.linkedin.com/in/tina-nguyen-9a6537326/'
+  },
+  { 
+    name: 'Phuong Linh', 
+    role: 'Legacy', 
+    school: 'Minerva',
+    image: '/linh.jpeg',
+    linkedin: 'https://www.linkedin.com/in/phuong-linh-nguyen-/'
+  },
+  { 
+    name: 'Kim Ha', 
+    role: 'Legacy', 
+    school: 'UC Irvine',
+    image: '/kim.jpeg',
+    linkedin: 'https://www.linkedin.com/in/kim-ha-trann/'
+  },
+  { 
+    name: 'Vanessa', 
+    role: 'Finance', 
+    school: 'Purdue',
+    image: '/vanessa.jpeg',
+    linkedin: 'https://www.linkedin.com/in/vanessa-chan-1a0383232/'
+  },
+  { 
+    name: 'Tiffany', 
+    role: 'AI Product', 
+    school: 'UMich',
+    image: '/tiffany.jpeg',
+    linkedin: 'https://www.linkedin.com/in/tiffany-rosalyn-wong-2a68b7238/'
+  },
 ]
 
 const products = [
@@ -66,20 +97,29 @@ export default function ProgramOverview() {
           
           <div className="grid grid-cols-5 gap-4">
             {cohort.map((person, i) => (
-              <motion.div
+              <motion.a
                 key={person.name}
+                href={person.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.05 }}
-                className="text-center"
+                className="text-center group"
               >
-                <div className="w-12 h-12 bg-[#1a1a1a] rounded-full mx-auto mb-3 flex items-center justify-center border border-[#222]">
-                  <span className="text-[#6AC670] font-medium">{person.name[0]}</span>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-3 overflow-hidden border-2 border-[#222] group-hover:border-[#6AC670] transition-colors">
+                  <Image
+                    src={person.image}
+                    alt={person.name}
+                    width={80}
+                    height={80}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                <p className="text-white text-sm font-medium">{person.name}</p>
+                <p className="text-white text-sm font-medium group-hover:text-[#6AC670] transition-colors">{person.name}</p>
                 <p className="text-[#555] text-xs mt-0.5">{person.role}</p>
-              </motion.div>
+              </motion.a>
             ))}
           </div>
         </motion.div>
