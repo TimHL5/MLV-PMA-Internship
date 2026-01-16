@@ -264,13 +264,13 @@ export default function HomePage() {
         <div className="bg-dark-card/80 backdrop-blur-sm border border-brand-green/20 rounded-xl p-4 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-2xl">☕</span>
-            <h2 className="text-lg font-semibold text-light-DEFAULT">This Week's Coffee Chat</h2>
+            <h2 className="text-lg font-semibold text-light-DEFAULT">This Week&apos;s Coffee Chat</h2>
           </div>
 
           {myCoffeeChat ? (
             <div className="space-y-4">
               <div className="bg-dark-pure/50 rounded-lg p-4">
-                <p className="text-text-muted text-sm mb-2">You're paired with:</p>
+                <p className="text-text-muted text-sm mb-2">You&apos;re paired with:</p>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-brand-green/20 flex items-center justify-center text-brand-green font-medium text-lg">
                     {(myCoffeeChat.intern_1_name === currentUser?.name
@@ -321,7 +321,7 @@ export default function HomePage() {
               </div>
 
               <p className="text-text-muted text-xs">
-                💡 Topics: weekend plans, podcasts, what you're learning
+                💡 Topics: weekend plans, podcasts, what you&apos;re learning
               </p>
             </div>
           ) : (
