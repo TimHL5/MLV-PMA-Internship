@@ -3,18 +3,13 @@ import { neon } from '@neondatabase/serverless';
 
 const sql = neon(process.env.POSTGRES_URL!);
 
-// POST /api/internal/seed-team - Reset and seed team members
-// This is a one-time setup endpoint
-export async function POST(request: Request) {
+// Shared seed function
+async function seedTeam(key: string | null) {
+  if (key !== 'mlv2026setup') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    // Check for secret key (basic protection)
-    const { searchParams } = new URL(request.url);
-    const key = searchParams.get('key');
-
-    if (key !== 'mlv2026setup') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     // Clear existing interns
     await sql`DELETE FROM interns`;
 
@@ -49,8 +44,22 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Seed error:', error);
     return NextResponse.json(
-      { error: 'Failed to seed team members' },
+      { error: 'Failed to seed team members', details: String(error) },
       { status: 500 }
     );
   }
+}
+
+// GET /api/internal/seed-team?key=mlv2026setup - Seed via browser
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const key = searchParams.get('key');
+  return seedTeam(key);
+}
+
+// POST /api/internal/seed-team?key=mlv2026setup - Seed via API call
+export async function POST(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const key = searchParams.get('key');
+  return seedTeam(key);
 }
