@@ -12,23 +12,34 @@ const sql = neon(process.env.POSTGRES_URL!);
 async function seed() {
   console.log('🌱 Seeding database...\n');
 
-  // Add sample interns
-  const interns = [
-    { name: 'Jasmine Bai', email: 'jasmine.bai@example.com' },
-    { name: 'Teddy Liu', email: 'teddy.liu@example.com' },
+  // Clear existing interns first
+  console.log('Clearing existing interns...');
+  await sql`DELETE FROM interns`;
+
+  // Add team members
+  const teamMembers = [
+    // Admins
+    { name: 'Tim', email: 'tim@mlv.com', role: 'admin' },
+    { name: 'Dylan', email: 'dylan@mlv.com', role: 'admin' },
+    // Interns
+    { name: 'Tina', email: 'tina@mlv.com', role: 'intern' },
+    { name: 'Kim Ha', email: 'kimha@mlv.com', role: 'intern' },
+    { name: 'Linh', email: 'linh@mlv.com', role: 'intern' },
+    { name: 'Kim', email: 'kim@mlv.com', role: 'intern' },
+    { name: 'Tiffany', email: 'tiffany@mlv.com', role: 'intern' },
   ];
 
-  console.log('Adding interns...');
-  for (const intern of interns) {
+  console.log('Adding team members...');
+  for (const member of teamMembers) {
     try {
       await sql`
-        INSERT INTO interns (name, email) 
-        VALUES (${intern.name}, ${intern.email})
+        INSERT INTO interns (name, email, role)
+        VALUES (${member.name}, ${member.email}, ${member.role})
         ON CONFLICT DO NOTHING
       `;
-      console.log(`  ✓ ${intern.name}`);
+      console.log(`  ✓ ${member.name} (${member.role})`);
     } catch (e) {
-      console.log(`  ⚠ ${intern.name} may already exist`);
+      console.log(`  ⚠ ${member.name} may already exist`);
     }
   }
 
