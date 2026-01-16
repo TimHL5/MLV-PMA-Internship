@@ -274,7 +274,7 @@ export async function getSubmissionStatus(sprintId: number): Promise<SubmissionS
   `;
 
   const submissionMap = new Map(
-    submissions.map((s: { intern_id: number; submitted_at: Date }) => [s.intern_id, s.submitted_at])
+    (submissions as { intern_id: number; submitted_at: Date }[]).map((s) => [s.intern_id, s.submitted_at])
   );
 
   return interns.map(intern => ({
