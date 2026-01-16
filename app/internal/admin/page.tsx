@@ -60,6 +60,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSprint]);
 
   const fetchData = async () => {

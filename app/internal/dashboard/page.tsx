@@ -57,10 +57,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchInitialData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     fetchSubmissions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedIntern, selectedSprint]);
 
   const fetchInitialData = async () => {

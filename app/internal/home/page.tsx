@@ -57,6 +57,7 @@ export default function HomePage() {
     if (activeSprint) {
       fetchDashboardData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSprint, currentUser]);
 
   const fetchDashboardData = async () => {
@@ -321,7 +322,7 @@ export default function HomePage() {
               </div>
 
               <p className="text-text-muted text-xs">
-                💡 Topics: weekend plans, podcasts, what you're learning
+                💡 Topics: weekend plans, podcasts, what you&apos;re learning
               </p>
             </div>
           ) : (

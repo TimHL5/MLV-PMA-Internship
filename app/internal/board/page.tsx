@@ -61,6 +61,7 @@ export default function BoardPage() {
     if (activeSprint) {
       fetchTasks();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSprint]);
 
   const fetchTasks = async () => {

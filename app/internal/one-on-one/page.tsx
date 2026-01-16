@@ -37,6 +37,7 @@ export default function OneOnOnePage() {
     } else {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser, activeSprint]);
 
   const fetchOneOnOne = async () => {

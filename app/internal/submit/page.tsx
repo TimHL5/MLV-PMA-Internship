@@ -38,6 +38,7 @@ export default function SubmitPage() {
     if (activeSprint && !formData.sprintId) {
       setFormData(prev => ({ ...prev, sprintId: activeSprint.id.toString() }));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser, activeSprint]);
 
   const handleSubmit = async (e: React.FormEvent) => {

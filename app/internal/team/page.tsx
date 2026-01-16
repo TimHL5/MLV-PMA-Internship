@@ -36,6 +36,7 @@ export default function TeamPage() {
 
   useEffect(() => {
     fetchHighFives();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchHighFives = async () => {
@@ -123,7 +124,7 @@ export default function TeamPage() {
             <span>🙌</span> Team Recognition
           </h1>
           <p className="text-text-muted text-sm mt-1">
-            Celebrate your teammates' wins
+            Celebrate your teammates&apos; wins
           </p>
         </div>
         <button
@@ -192,7 +193,7 @@ export default function TeamPage() {
 
                     {/* Message */}
                     <p className="text-text-light text-sm leading-relaxed">
-                      "{hf.message}"
+                      &quot;{hf.message}&quot;
                     </p>
 
                     {/* Category tag */}
