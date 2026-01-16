@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePortal } from '../layout';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface DashboardStats {
   totalInterns: number;
@@ -45,8 +46,162 @@ interface CoffeeChat {
   intern_2_timezone: string | null;
 }
 
+// Stagger animation for children
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
+  },
+};
+
+// Card hover effect
+const cardHover = {
+  scale: 1.02,
+  transition: { duration: 0.2 },
+};
+
+// Skeleton loading component
+function Skeleton({ className = '' }: { className?: string }) {
+  return (
+    <div className={`relative overflow-hidden bg-white/5 rounded-xl ${className}`}>
+      <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+    </div>
+  );
+}
+
+// Stat card component
+function StatCard({
+  label,
+  value,
+  color,
+  href,
+  icon,
+  delay = 0,
+}: {
+  label: string;
+  value: string | number;
+  color: string;
+  href?: string;
+  icon?: React.ReactNode;
+  delay?: number;
+}) {
+  const content = (
+    <>
+      {/* Gradient glow on hover */}
+      <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br ${color}/5 to-transparent`} />
+
+      {/* Top row with icon */}
+      <div className="flex items-start justify-between mb-3">
+        <p className="text-text-muted/70 text-sm font-medium">{label}</p>
+        {icon && (
+          <div className={`w-8 h-8 rounded-lg ${color}/10 flex items-center justify-center`}>
+            {icon}
+          </div>
+        )}
+      </div>
+
+      {/* Value */}
+      <p className={`text-3xl font-bold ${color} tracking-tight`}>{value}</p>
+
+      {/* Decorative corner */}
+      <div className={`absolute -bottom-4 -right-4 w-20 h-20 rounded-full ${color}/5 blur-2xl`} />
+    </>
+  );
+
+  const baseClassName = `relative overflow-hidden bg-gradient-to-br from-dark-card/80 to-dark-card/40 backdrop-blur-sm border border-white/5 rounded-2xl p-5 group ${href ? 'cursor-pointer' : ''}`;
+
+  if (href) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay, duration: 0.4 }}
+        whileHover={cardHover}
+        whileTap={{ scale: 0.98 }}
+      >
+        <Link href={href} className={`block ${baseClassName}`}>
+          {content}
+        </Link>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.4 }}
+      className={baseClassName}
+    >
+      {content}
+    </motion.div>
+  );
+}
+
+// Quick action card
+function QuickActionCard({
+  href,
+  icon,
+  title,
+  subtitle,
+  color,
+  delay = 0,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  color: string;
+  delay?: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.4 }}
+    >
+      <Link href={href} className="block group">
+        <motion.div
+          whileHover={{ scale: 1.02, y: -2 }}
+          whileTap={{ scale: 0.98 }}
+          className="relative overflow-hidden flex items-center gap-4 p-4 bg-gradient-to-br from-dark-card/80 to-dark-card/40 backdrop-blur-sm border border-white/5 rounded-2xl"
+        >
+          {/* Icon container */}
+          <div className={`w-12 h-12 rounded-xl ${color}/15 flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}>
+            {icon}
+          </div>
+
+          {/* Text */}
+          <div className="flex-1 min-w-0">
+            <p className="text-text-light font-medium group-hover:text-white transition-colors">{title}</p>
+            <p className="text-text-muted/60 text-sm">{subtitle}</p>
+          </div>
+
+          {/* Arrow */}
+          <svg className="w-5 h-5 text-text-muted/40 group-hover:text-text-light group-hover:translate-x-1 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+          </svg>
+        </motion.div>
+      </Link>
+    </motion.div>
+  );
+}
+
 export default function HomePage() {
-  const { currentUser, activeSprint, interns } = usePortal();
+  const { currentUser, activeSprint } = usePortal();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus[]>([]);
   const [recentHighFives, setRecentHighFives] = useState<HighFive[]>([]);
@@ -67,22 +222,10 @@ export default function HomePage() {
         fetch('/api/internal/high-fives?limit=5'),
       ]);
 
-      if (statsRes.ok) {
-        const statsData = await statsRes.json();
-        setStats(statsData);
-      }
+      if (statsRes.ok) setStats(await statsRes.json());
+      if (statusRes.ok) setSubmissionStatus(await statusRes.json());
+      if (highFivesRes.ok) setRecentHighFives(await highFivesRes.json());
 
-      if (statusRes.ok) {
-        const statusData = await statusRes.json();
-        setSubmissionStatus(statusData);
-      }
-
-      if (highFivesRes.ok) {
-        const highFivesData = await highFivesRes.json();
-        setRecentHighFives(highFivesData);
-      }
-
-      // Get coffee chat for current user
       if (currentUser && activeSprint) {
         const coffeeChatRes = await fetch(
           `/api/internal/coffee-chats?internId=${currentUser.id}&sprintId=${activeSprint.id}`
@@ -128,177 +271,291 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        {/* Skeleton loading */}
-        {[1, 2, 3].map(i => (
-          <div key={i} className="h-32 bg-dark-card/50 rounded-xl animate-pulse" />
-        ))}
+      <div className="space-y-6 pb-20 lg:pb-0">
+        <div className="flex justify-between items-start">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <Skeleton className="h-10 w-36" />
+        </div>
+        <Skeleton className="h-48 w-full" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 pb-20 lg:pb-0">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-8 pb-20 lg:pb-0"
+    >
       {/* Welcome header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-light-DEFAULT">
-            {currentUser ? `Welcome, ${currentUser.name.split(' ')[0]}` : 'Welcome'}
-          </h1>
-          <p className="text-text-muted text-sm mt-1">
-            {activeSprint?.name || 'No active sprint'}
-            {daysLeft !== null && daysLeft > 0 && (
-              <span className="ml-2 text-brand-yellow">({daysLeft} days left)</span>
+          <motion.h1
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="text-3xl font-bold text-white tracking-tight"
+          >
+            {currentUser ? (
+              <>
+                Welcome back,{' '}
+                <span className="bg-gradient-to-r from-brand-green to-brand-yellow bg-clip-text text-transparent">
+                  {currentUser.name.split(' ')[0]}
+                </span>
+              </>
+            ) : (
+              'Welcome'
             )}
-          </p>
-        </div>
-        <Link
-          href="/internal/submit"
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5
-                   bg-brand-green hover:bg-primary-dark text-dark-pure font-medium rounded-xl
-                   transition-all duration-200 shadow-glow-green hover:shadow-glow-lg"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Submit Update
-        </Link>
-      </div>
-
-      {/* Who's Missing Board - Feature 4 */}
-      <div className="bg-dark-card/80 backdrop-blur-sm border border-brand-green/20 rounded-xl p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-light-DEFAULT">
-            Sprint Status
-          </h2>
-          <span className="text-sm text-text-muted">
-            {submittedCount}/{totalCount} Submitted ({Math.round(progressPercent)}%)
-          </span>
-        </div>
-
-        {/* Progress bar */}
-        <div className="h-3 bg-dark-pure rounded-full overflow-hidden mb-6">
-          <div
-            className="h-full bg-gradient-to-r from-brand-green to-primary-light transition-all duration-500"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-
-        {/* Intern status grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {submissionStatus.map((status) => (
-            <div
-              key={status.intern.id}
-              className={`
-                flex items-center gap-2 p-3 rounded-lg border
-                ${status.hasSubmitted
-                  ? 'bg-brand-green/10 border-brand-green/30'
-                  : 'bg-accent-coral/10 border-accent-coral/30'
-                }
-              `}
-            >
-              <div className={`
-                w-2 h-2 rounded-full flex-shrink-0
-                ${status.hasSubmitted ? 'bg-brand-green' : 'bg-accent-coral'}
-              `} />
-              <span className={`
-                text-sm truncate
-                ${status.hasSubmitted ? 'text-brand-green' : 'text-accent-coral'}
-              `}>
-                {status.intern.name.split(' ')[0]}
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-text-muted/70 mt-2 flex items-center gap-3"
+          >
+            <span>{activeSprint?.name || 'No active sprint'}</span>
+            {daysLeft !== null && daysLeft > 0 && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-brand-yellow/10 text-brand-yellow text-xs font-medium rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-yellow animate-pulse" />
+                {daysLeft} days left
               </span>
-            </div>
-          ))}
+            )}
+          </motion.p>
         </div>
 
-        {/* Missing list */}
-        {submissionStatus.filter(s => !s.hasSubmitted).length > 0 && (
-          <div className="mt-4 pt-4 border-t border-brand-green/10">
-            <p className="text-text-muted text-sm">
-              <span className="text-accent-coral font-medium">Missing: </span>
-              {submissionStatus
-                .filter(s => !s.hasSubmitted)
-                .map(s => s.intern.name.split(' ')[0])
-                .join(', ')}
-            </p>
-          </div>
-        )}
-      </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Link
+            href="/internal/submit"
+            className="group inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-brand-green to-brand-green/80 hover:from-brand-green hover:to-brand-green text-dark-pure font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-brand-green/20 hover:shadow-brand-green/40 hover:shadow-xl"
+          >
+            <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Submit Update
+          </Link>
+        </motion.div>
+      </motion.div>
 
-      {/* Quick Stats */}
+      {/* Sprint Status Board */}
+      <motion.div
+        variants={itemVariants}
+        className="relative overflow-hidden bg-gradient-to-br from-dark-card/80 to-dark-card/40 backdrop-blur-sm border border-white/5 rounded-2xl p-6"
+      >
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-green/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+
+        <div className="relative">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-xl font-semibold text-white">Sprint Status</h2>
+              <p className="text-text-muted/60 text-sm mt-1">Track team progress this sprint</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-2xl font-bold text-white">{submittedCount}<span className="text-text-muted/50">/{totalCount}</span></p>
+                <p className="text-xs text-text-muted/60">Submitted</p>
+              </div>
+              <div className="w-16 h-16 relative">
+                <svg className="w-16 h-16 -rotate-90" viewBox="0 0 36 36">
+                  <circle cx="18" cy="18" r="15" fill="none" className="stroke-white/5" strokeWidth="3" />
+                  <motion.circle
+                    cx="18"
+                    cy="18"
+                    r="15"
+                    fill="none"
+                    className="stroke-brand-green"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeDasharray={`${progressPercent}, 100`}
+                    initial={{ strokeDasharray: '0, 100' }}
+                    animate={{ strokeDasharray: `${progressPercent}, 100` }}
+                    transition={{ duration: 1, delay: 0.5, ease: 'easeOut' }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-sm font-semibold text-brand-green">{Math.round(progressPercent)}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="h-2 bg-white/5 rounded-full overflow-hidden mb-6">
+            <motion.div
+              className="h-full bg-gradient-to-r from-brand-green via-brand-green to-brand-yellow"
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPercent}%` }}
+              transition={{ duration: 1, delay: 0.3, ease: 'easeOut' }}
+            />
+          </div>
+
+          {/* Intern status grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            <AnimatePresence>
+              {submissionStatus.map((status, index) => (
+                <motion.div
+                  key={status.intern.id}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.03 }}
+                  whileHover={{ scale: 1.05 }}
+                  className={`
+                    flex items-center gap-2 px-3 py-2.5 rounded-xl border transition-all duration-200
+                    ${status.hasSubmitted
+                      ? 'bg-brand-green/10 border-brand-green/20 hover:border-brand-green/40'
+                      : 'bg-white/5 border-white/5 hover:border-accent-coral/30'
+                    }
+                  `}
+                >
+                  <motion.div
+                    className={`w-2 h-2 rounded-full flex-shrink-0 ${status.hasSubmitted ? 'bg-brand-green' : 'bg-accent-coral'}`}
+                    animate={status.hasSubmitted ? {} : { scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  <span className={`text-sm truncate ${status.hasSubmitted ? 'text-brand-green' : 'text-text-muted/70'}`}>
+                    {status.intern.name.split(' ')[0]}
+                  </span>
+                  {status.hasSubmitted && (
+                    <svg className="w-3.5 h-3.5 text-brand-green ml-auto flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Missing summary */}
+          {submissionStatus.filter(s => !s.hasSubmitted).length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mt-4 pt-4 border-t border-white/5"
+            >
+              <p className="text-sm">
+                <span className="text-accent-coral/80 font-medium">Still waiting: </span>
+                <span className="text-text-muted/60">
+                  {submissionStatus
+                    .filter(s => !s.hasSubmitted)
+                    .map(s => s.intern.name.split(' ')[0])
+                    .join(', ')}
+                </span>
+              </p>
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Quick Stats Grid */}
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link
+          <StatCard
+            label="Total Submissions"
+            value={stats.totalSubmissions}
+            color="text-white"
             href="/internal/me"
-            className="bg-dark-card/80 backdrop-blur-sm border border-brand-green/20 rounded-xl p-4 hover:border-brand-green/40 transition-colors"
-          >
-            <p className="text-text-muted text-sm mb-1">Total Submissions</p>
-            <p className="text-3xl font-bold text-light-DEFAULT">{stats.totalSubmissions}</p>
-          </Link>
-          <Link
+            delay={0.1}
+            icon={
+              <svg className="w-4 h-4 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            }
+          />
+          <StatCard
+            label="High Fives"
+            value={stats.highFivesGiven}
+            color="text-brand-yellow"
             href="/internal/team"
-            className="bg-dark-card/80 backdrop-blur-sm border border-brand-green/20 rounded-xl p-4 hover:border-brand-green/40 transition-colors"
-          >
-            <p className="text-text-muted text-sm mb-1">High Fives</p>
-            <p className="text-3xl font-bold text-brand-yellow">{stats.highFivesGiven}</p>
-          </Link>
-          <Link
+            delay={0.15}
+            icon={<span className="text-lg">🙌</span>}
+          />
+          <StatCard
+            label="Tasks Done"
+            value={stats.tasksCompleted}
+            color="text-brand-green"
             href="/internal/board"
-            className="bg-dark-card/80 backdrop-blur-sm border border-brand-green/20 rounded-xl p-4 hover:border-brand-green/40 transition-colors"
-          >
-            <p className="text-text-muted text-sm mb-1">Tasks Done</p>
-            <p className="text-3xl font-bold text-brand-green">{stats.tasksCompleted}</p>
-          </Link>
-          <div className="bg-dark-card/80 backdrop-blur-sm border border-brand-green/20 rounded-xl p-4">
-            <p className="text-text-muted text-sm mb-1">Team Mood</p>
-            <p className="text-3xl font-bold text-accent-teal">
-              {stats.averageMood ? `${stats.averageMood.toFixed(1)}/5` : '--'}
-            </p>
-          </div>
+            delay={0.2}
+            icon={
+              <svg className="w-4 h-4 text-brand-green/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+          <StatCard
+            label="Team Mood"
+            value={stats.averageMood ? `${stats.averageMood.toFixed(1)}/5` : '--'}
+            color="text-accent-teal"
+            delay={0.25}
+            icon={<span className="text-lg">😊</span>}
+          />
         </div>
       )}
 
       {/* Two column layout */}
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Coffee Chat Card - Feature 5 */}
-        <div className="bg-dark-card/80 backdrop-blur-sm border border-brand-green/20 rounded-xl p-4 sm:p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-2xl">☕</span>
-            <h2 className="text-lg font-semibold text-light-DEFAULT">This Week&apos;s Coffee Chat</h2>
-          </div>
+        {/* Coffee Chat Card */}
+        <motion.div
+          variants={itemVariants}
+          className="relative overflow-hidden bg-gradient-to-br from-dark-card/80 to-dark-card/40 backdrop-blur-sm border border-white/5 rounded-2xl p-6"
+        >
+          <div className="absolute top-0 left-0 w-32 h-32 bg-brand-yellow/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2" />
 
-          {myCoffeeChat ? (
-            <div className="space-y-4">
-              <div className="bg-dark-pure/50 rounded-lg p-4">
-                <p className="text-text-muted text-sm mb-2">You&apos;re paired with:</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-brand-green/20 flex items-center justify-center text-brand-green font-medium text-lg">
-                    {(myCoffeeChat.intern_1_name === currentUser?.name
-                      ? myCoffeeChat.intern_2_name
-                      : myCoffeeChat.intern_1_name
-                    ).charAt(0)}
-                  </div>
-                  <div>
-                    <p className="text-light-DEFAULT font-medium">
-                      {myCoffeeChat.intern_1_name === currentUser?.name
-                        ? myCoffeeChat.intern_2_name
-                        : myCoffeeChat.intern_1_name}
-                    </p>
-                    <p className="text-text-muted text-sm">
-                      {myCoffeeChat.intern_1_name === currentUser?.name
-                        ? myCoffeeChat.intern_2_location
-                        : myCoffeeChat.intern_1_location}
-                      {' • '}
-                      {myCoffeeChat.intern_1_name === currentUser?.name
-                        ? myCoffeeChat.intern_2_timezone
-                        : myCoffeeChat.intern_1_timezone}
-                    </p>
-                  </div>
-                </div>
+          <div className="relative">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="text-2xl">☕</span>
+              <div>
+                <h2 className="text-lg font-semibold text-white">Coffee Chat</h2>
+                <p className="text-text-muted/60 text-xs">This week&apos;s connection</p>
               </div>
+            </div>
 
-              <div className="flex gap-2">
-                <button
+            {myCoffeeChat ? (
+              <div className="space-y-4">
+                <motion.div
+                  whileHover={{ scale: 1.01 }}
+                  className="bg-white/5 rounded-xl p-4 border border-white/5"
+                >
+                  <p className="text-text-muted/60 text-xs mb-3">You&apos;re paired with</p>
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-brand-green/30 to-brand-yellow/30 flex items-center justify-center text-brand-green font-semibold text-xl ring-2 ring-brand-green/20">
+                      {(myCoffeeChat.intern_1_name === currentUser?.name
+                        ? myCoffeeChat.intern_2_name
+                        : myCoffeeChat.intern_1_name
+                      ).charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-white font-medium text-lg">
+                        {myCoffeeChat.intern_1_name === currentUser?.name
+                          ? myCoffeeChat.intern_2_name
+                          : myCoffeeChat.intern_1_name}
+                      </p>
+                      <p className="text-text-muted/60 text-sm flex items-center gap-2">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        {myCoffeeChat.intern_1_name === currentUser?.name
+                          ? myCoffeeChat.intern_2_location
+                          : myCoffeeChat.intern_1_location}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.button
                   onClick={async () => {
                     await fetch(`/api/internal/coffee-chats/${myCoffeeChat.id}`, {
                       method: 'PATCH',
@@ -308,146 +565,167 @@ export default function HomePage() {
                     fetchDashboardData();
                   }}
                   disabled={myCoffeeChat.status === 'completed'}
-                  className={`
-                    flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors
-                    ${myCoffeeChat.status === 'completed'
+                  whileHover={myCoffeeChat.status !== 'completed' ? { scale: 1.02 } : {}}
+                  whileTap={myCoffeeChat.status !== 'completed' ? { scale: 0.98 } : {}}
+                  className={`w-full py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    myCoffeeChat.status === 'completed'
                       ? 'bg-brand-green/20 text-brand-green cursor-default'
                       : 'bg-brand-green/10 border border-brand-green/30 text-brand-green hover:bg-brand-green/20'
-                    }
-                  `}
+                  }`}
                 >
-                  {myCoffeeChat.status === 'completed' ? '✓ Completed' : 'Mark Complete'}
-                </button>
-              </div>
-
-              <p className="text-text-muted text-xs">
-                💡 Topics: weekend plans, podcasts, what you&apos;re learning
-              </p>
-            </div>
-          ) : (
-            <div className="text-center py-6">
-              <p className="text-text-muted">No coffee chat assigned yet</p>
-              {currentUser?.role === 'admin' && (
-                <Link
-                  href="/internal/admin"
-                  className="inline-block mt-3 text-brand-green text-sm hover:underline"
-                >
-                  Generate pairings →
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Recent High Fives - Feature 1 */}
-        <div className="bg-dark-card/80 backdrop-blur-sm border border-brand-green/20 rounded-xl p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🙌</span>
-              <h2 className="text-lg font-semibold text-light-DEFAULT">Recent High Fives</h2>
-            </div>
-            <Link
-              href="/internal/team"
-              className="text-brand-green text-sm hover:underline"
-            >
-              View all →
-            </Link>
-          </div>
-
-          {recentHighFives.length > 0 ? (
-            <div className="space-y-3">
-              {recentHighFives.map((hf) => (
-                <div key={hf.id} className="bg-dark-pure/50 rounded-lg p-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-text-light text-sm">
-                        <span className="text-brand-yellow font-medium">{hf.from_intern_name.split(' ')[0]}</span>
-                        {' → '}
-                        <span className="text-brand-green font-medium">{hf.to_intern_name.split(' ')[0]}</span>
-                      </p>
-                      <p className="text-text-muted text-sm mt-1 line-clamp-2">{hf.message}</p>
-                    </div>
-                    <span className="text-text-muted text-xs whitespace-nowrap">
-                      {formatTimeAgo(hf.created_at)}
+                  {myCoffeeChat.status === 'completed' ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      Chat Completed
                     </span>
-                  </div>
+                  ) : 'Mark as Complete'}
+                </motion.button>
+
+                <p className="text-text-muted/50 text-xs flex items-center gap-1.5">
+                  <span className="text-brand-yellow">💡</span>
+                  Topics: weekend plans, podcasts, what you&apos;re learning
+                </p>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
+                  <span className="text-3xl opacity-50">☕</span>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-6">
-              <p className="text-text-muted mb-3">No high fives yet</p>
-              <Link
-                href="/internal/team"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-brand-yellow/10 border border-brand-yellow/30 text-brand-yellow rounded-lg text-sm hover:bg-brand-yellow/20 transition-colors"
-              >
-                Give a High Five
+                <p className="text-text-muted/60 mb-4">No coffee chat assigned yet</p>
+                {currentUser?.role === 'admin' && (
+                  <Link
+                    href="/internal/admin"
+                    className="inline-flex items-center gap-2 text-brand-green text-sm hover:underline"
+                  >
+                    Generate pairings
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Recent High Fives */}
+        <motion.div
+          variants={itemVariants}
+          className="relative overflow-hidden bg-gradient-to-br from-dark-card/80 to-dark-card/40 backdrop-blur-sm border border-white/5 rounded-2xl p-6"
+        >
+          <div className="absolute bottom-0 right-0 w-32 h-32 bg-brand-green/5 rounded-full blur-3xl translate-y-1/2 translate-x-1/2" />
+
+          <div className="relative">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🙌</span>
+                <div>
+                  <h2 className="text-lg font-semibold text-white">Recent High Fives</h2>
+                  <p className="text-text-muted/60 text-xs">Team recognition</p>
+                </div>
+              </div>
+              <Link href="/internal/team" className="text-brand-green text-sm hover:text-brand-green/80 flex items-center gap-1 group">
+                View all
+                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                </svg>
               </Link>
             </div>
-          )}
-        </div>
+
+            {recentHighFives.length > 0 ? (
+              <div className="space-y-3">
+                {recentHighFives.map((hf, index) => (
+                  <motion.div
+                    key={hf.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="group bg-white/5 hover:bg-white/[0.07] rounded-xl p-3 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm">
+                          <span className="text-brand-yellow font-medium">{hf.from_intern_name.split(' ')[0]}</span>
+                          <span className="text-text-muted/40 mx-2">→</span>
+                          <span className="text-brand-green font-medium">{hf.to_intern_name.split(' ')[0]}</span>
+                        </p>
+                        <p className="text-text-muted/60 text-sm mt-1 line-clamp-2">{hf.message}</p>
+                      </div>
+                      <span className="text-text-muted/40 text-xs whitespace-nowrap">{formatTimeAgo(hf.created_at)}</span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
+                  <span className="text-3xl opacity-50">🙌</span>
+                </div>
+                <p className="text-text-muted/60 mb-4">No high fives yet</p>
+                <Link
+                  href="/internal/team"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-yellow/10 text-brand-yellow rounded-xl text-sm font-medium hover:bg-brand-yellow/20 transition-colors"
+                >
+                  Give a High Five
+                </Link>
+              </div>
+            )}
+          </div>
+        </motion.div>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link
-          href="/internal/one-on-one"
-          className="flex items-center gap-3 p-4 bg-dark-card/80 backdrop-blur-sm border border-brand-green/20 rounded-xl hover:border-brand-green/40 transition-colors"
-        >
-          <div className="w-10 h-10 rounded-lg bg-accent-teal/20 flex items-center justify-center">
-            <svg className="w-5 h-5 text-accent-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-light-DEFAULT text-sm font-medium">1:1 Prep</p>
-            <p className="text-text-muted text-xs">Prepare for your call</p>
-          </div>
-        </Link>
-
-        <Link
-          href="/internal/board"
-          className="flex items-center gap-3 p-4 bg-dark-card/80 backdrop-blur-sm border border-brand-green/20 rounded-xl hover:border-brand-green/40 transition-colors"
-        >
-          <div className="w-10 h-10 rounded-lg bg-accent-purple/20 flex items-center justify-center">
-            <svg className="w-5 h-5 text-accent-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-light-DEFAULT text-sm font-medium">Sprint Board</p>
-            <p className="text-text-muted text-xs">View tasks</p>
-          </div>
-        </Link>
-
-        <Link
-          href="/internal/team"
-          className="flex items-center gap-3 p-4 bg-dark-card/80 backdrop-blur-sm border border-brand-green/20 rounded-xl hover:border-brand-green/40 transition-colors"
-        >
-          <div className="w-10 h-10 rounded-lg bg-brand-yellow/20 flex items-center justify-center">
-            <span className="text-lg">🙌</span>
-          </div>
-          <div>
-            <p className="text-light-DEFAULT text-sm font-medium">High Five</p>
-            <p className="text-text-muted text-xs">Recognize a teammate</p>
-          </div>
-        </Link>
-
-        <Link
-          href="/internal/me"
-          className="flex items-center gap-3 p-4 bg-dark-card/80 backdrop-blur-sm border border-brand-green/20 rounded-xl hover:border-brand-green/40 transition-colors"
-        >
-          <div className="w-10 h-10 rounded-lg bg-brand-green/20 flex items-center justify-center">
-            <svg className="w-5 h-5 text-brand-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-light-DEFAULT text-sm font-medium">My Progress</p>
-            <p className="text-text-muted text-xs">View your stats</p>
-          </div>
-        </Link>
-      </div>
-    </div>
+      <motion.div variants={itemVariants}>
+        <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <QuickActionCard
+            href="/internal/one-on-one"
+            title="1:1 Prep"
+            subtitle="Prepare for your call"
+            color="bg-accent-teal"
+            delay={0.1}
+            icon={
+              <svg className="w-6 h-6 text-accent-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            }
+          />
+          <QuickActionCard
+            href="/internal/board"
+            title="Sprint Board"
+            subtitle="View tasks"
+            color="bg-accent-purple"
+            delay={0.15}
+            icon={
+              <svg className="w-6 h-6 text-accent-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            }
+          />
+          <QuickActionCard
+            href="/internal/team"
+            title="High Five"
+            subtitle="Recognize a teammate"
+            color="bg-brand-yellow"
+            delay={0.2}
+            icon={<span className="text-2xl">🙌</span>}
+          />
+          <QuickActionCard
+            href="/internal/me"
+            title="My Progress"
+            subtitle="View your stats"
+            color="bg-brand-green"
+            delay={0.25}
+            icon={
+              <svg className="w-6 h-6 text-brand-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            }
+          />
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }

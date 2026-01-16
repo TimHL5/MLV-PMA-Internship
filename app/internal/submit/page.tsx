@@ -3,14 +3,60 @@
 import { useState, useEffect } from 'react';
 import { usePortal } from '../layout';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const MOOD_OPTIONS = [
-  { value: 1, emoji: '😫', label: 'Struggling' },
-  { value: 2, emoji: '😕', label: 'Challenging' },
-  { value: 3, emoji: '😐', label: 'Okay' },
-  { value: 4, emoji: '🙂', label: 'Good' },
-  { value: 5, emoji: '😊', label: 'Great' },
+  { value: 1, emoji: '😫', label: 'Struggling', color: 'from-accent-coral/20 to-accent-coral/5' },
+  { value: 2, emoji: '😕', label: 'Challenging', color: 'from-brand-yellow/20 to-brand-yellow/5' },
+  { value: 3, emoji: '😐', label: 'Okay', color: 'from-text-muted/20 to-text-muted/5' },
+  { value: 4, emoji: '🙂', label: 'Good', color: 'from-accent-teal/20 to-accent-teal/5' },
+  { value: 5, emoji: '😊', label: 'Great', color: 'from-brand-green/20 to-brand-green/5' },
 ];
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
+  },
+};
+
+// Form field component
+function FormField({
+  label,
+  required,
+  optional,
+  children,
+  hint,
+}: {
+  label: string;
+  required?: boolean;
+  optional?: boolean;
+  children: React.ReactNode;
+  hint?: string;
+}) {
+  return (
+    <motion.div variants={itemVariants}>
+      <label className="block text-sm font-medium text-text-light/80 mb-2">
+        {label}
+        {required && <span className="text-accent-coral ml-1">*</span>}
+        {optional && <span className="text-text-muted/50 ml-1">(optional)</span>}
+      </label>
+      {children}
+      {hint && <p className="text-text-muted/50 text-xs mt-2">{hint}</p>}
+    </motion.div>
+  );
+}
 
 export default function SubmitPage() {
   const { currentUser, activeSprint, interns, sprints } = usePortal();
@@ -29,6 +75,16 @@ export default function SubmitPage() {
     mood: 0,
     hoursWorked: '',
   });
+
+  // Form progress
+  const getProgress = () => {
+    let filled = 0;
+    if (formData.internId) filled++;
+    if (formData.sprintId) filled++;
+    if (formData.goals.length >= 10) filled++;
+    if (formData.deliverables.length >= 10) filled++;
+    return (filled / 4) * 100;
+  };
 
   // Pre-fill intern and sprint if available
   useEffect(() => {
@@ -63,7 +119,6 @@ export default function SubmitPage() {
 
       if (response.ok) {
         setSuccess(true);
-        // Reset form but keep intern/sprint selected
         setFormData(prev => ({
           ...prev,
           goals: '',
@@ -77,7 +132,7 @@ export default function SubmitPage() {
         const data = await response.json();
         setError(data.error || 'Failed to submit. Please try again.');
       }
-    } catch (err) {
+    } catch {
       setError('Something went wrong. Please try again.');
     } finally {
       setSubmitting(false);
@@ -90,220 +145,256 @@ export default function SubmitPage() {
     if (success) setSuccess(false);
   };
 
+  const progress = getProgress();
+
   return (
-    <div className="max-w-2xl mx-auto pb-20 lg:pb-0">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="max-w-2xl mx-auto pb-20 lg:pb-0"
+    >
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-light-DEFAULT">Weekly Progress Update</h1>
-        <p className="text-text-muted text-sm mt-1">
-          Submit your goals and deliverables for this sprint
-        </p>
-      </div>
+      <motion.div variants={itemVariants} className="mb-8">
+        <motion.h1
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="text-3xl font-bold text-white tracking-tight"
+        >
+          Weekly Progress Update
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-text-muted/70 mt-2"
+        >
+          Share your goals and accomplishments for this sprint
+        </motion.p>
+      </motion.div>
+
+      {/* Progress bar */}
+      <motion.div variants={itemVariants} className="mb-6">
+        <div className="flex items-center justify-between text-sm text-text-muted/60 mb-2">
+          <span>Form Progress</span>
+          <span>{Math.round(progress)}% complete</span>
+        </div>
+        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-gradient-to-r from-brand-green via-brand-green to-brand-yellow"
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.3 }}
+          />
+        </div>
+      </motion.div>
 
       {/* Success message */}
-      {success && (
-        <div className="mb-6 p-4 bg-brand-green/10 border border-brand-green/30 rounded-xl">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-brand-green/20 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+      <AnimatePresence>
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="mb-6 p-5 bg-gradient-to-br from-brand-green/15 to-brand-green/5 border border-brand-green/20 rounded-2xl"
+          >
+            <div className="flex items-start gap-4">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: [0, 1.2, 1] }}
+                transition={{ duration: 0.5 }}
+                className="w-12 h-12 bg-brand-green/20 rounded-xl flex items-center justify-center flex-shrink-0"
+              >
+                <svg className="w-6 h-6 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </motion.div>
+              <div className="flex-1">
+                <p className="text-brand-green font-semibold text-lg">Submission successful!</p>
+                <p className="text-text-muted/70 text-sm mt-1">Your progress update has been recorded.</p>
+              </div>
             </div>
-            <div>
-              <p className="text-brand-green font-medium">Submission successful!</p>
-              <p className="text-text-muted text-sm">Your progress update has been recorded.</p>
+            <div className="mt-5 flex gap-3">
+              <Link
+                href="/internal/home"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-green/20 text-brand-green text-sm font-medium rounded-xl hover:bg-brand-green/30 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                View Dashboard
+              </Link>
+              <button
+                onClick={() => setSuccess(false)}
+                className="px-4 py-2.5 text-text-muted/70 text-sm hover:text-text-light transition-colors"
+              >
+                Submit Another
+              </button>
             </div>
-          </div>
-          <div className="mt-4 flex gap-3">
-            <Link
-              href="/internal/home"
-              className="px-4 py-2 bg-brand-green/10 border border-brand-green/30 text-brand-green text-sm rounded-lg hover:bg-brand-green/20 transition-colors"
-            >
-              View Dashboard
-            </Link>
-            <button
-              onClick={() => setSuccess(false)}
-              className="px-4 py-2 text-text-muted text-sm hover:text-text-light transition-colors"
-            >
-              Submit Another
-            </button>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Error message */}
-      {error && (
-        <div className="mb-6 p-4 bg-accent-coral/10 border border-accent-coral/30 rounded-xl">
-          <p className="text-accent-coral text-sm">{error}</p>
-        </div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="mb-6 p-4 bg-accent-coral/10 border border-accent-coral/20 rounded-xl"
+          >
+            <p className="text-accent-coral text-sm">{error}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Form */}
-      <div className="bg-dark-card/80 backdrop-blur-sm border border-brand-green/20 rounded-xl p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <motion.div
+        variants={itemVariants}
+        className="relative overflow-hidden bg-gradient-to-br from-dark-card/80 to-dark-card/40 backdrop-blur-sm border border-white/5 rounded-2xl p-6"
+      >
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-48 h-48 bg-brand-green/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-brand-yellow/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+        <form onSubmit={handleSubmit} className="relative space-y-6">
           {/* Intern & Sprint Selection */}
           <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-text-light mb-2">
-                Your Name <span className="text-accent-coral">*</span>
-              </label>
+            <FormField label="Your Name" required>
               <select
                 name="internId"
                 value={formData.internId}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-dark-pure/50 border border-brand-green/30 rounded-xl
-                         text-light-DEFAULT
-                         focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50
-                         transition-all duration-200"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50 transition-all"
               >
-                <option value="">Select your name</option>
+                <option value="" className="bg-dark-card">Select your name</option>
                 {interns.map(intern => (
-                  <option key={intern.id} value={intern.id}>
+                  <option key={intern.id} value={intern.id} className="bg-dark-card">
                     {intern.name}
                   </option>
                 ))}
               </select>
-            </div>
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-text-light mb-2">
-                Sprint <span className="text-accent-coral">*</span>
-              </label>
+            <FormField label="Sprint" required>
               <select
                 name="sprintId"
                 value={formData.sprintId}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-dark-pure/50 border border-brand-green/30 rounded-xl
-                         text-light-DEFAULT
-                         focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50
-                         transition-all duration-200"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50 transition-all"
               >
-                <option value="">Select sprint</option>
+                <option value="" className="bg-dark-card">Select sprint</option>
                 {sprints.map(sprint => (
-                  <option key={sprint.id} value={sprint.id}>
+                  <option key={sprint.id} value={sprint.id} className="bg-dark-card">
                     {sprint.name} {sprint.is_active ? '(Current)' : ''}
                   </option>
                 ))}
               </select>
-            </div>
+            </FormField>
           </div>
 
           {/* Goals */}
-          <div>
-            <label className="block text-sm font-medium text-text-light mb-2">
-              Goals for This Week <span className="text-accent-coral">*</span>
-            </label>
+          <FormField label="Goals for This Week" required hint="What do you plan to accomplish? Be specific.">
             <textarea
               name="goals"
               value={formData.goals}
               onChange={handleChange}
-              placeholder="What do you plan to accomplish this week?"
+              placeholder="e.g., Complete user authentication flow, write unit tests..."
               rows={3}
               required
               minLength={10}
-              className="w-full px-4 py-3 bg-dark-pure/50 border border-brand-green/30 rounded-xl
-                       text-light-DEFAULT placeholder-text-muted resize-none
-                       focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50
-                       transition-all duration-200"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-text-muted/40 resize-none focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50 transition-all"
             />
-          </div>
+          </FormField>
 
           {/* Deliverables */}
-          <div>
-            <label className="block text-sm font-medium text-text-light mb-2">
-              Deliverables Completed <span className="text-accent-coral">*</span>
-            </label>
+          <FormField label="Deliverables Completed" required hint="What did you actually complete or accomplish?">
             <textarea
               name="deliverables"
               value={formData.deliverables}
               onChange={handleChange}
-              placeholder="What did you actually complete or accomplish?"
+              placeholder="e.g., Shipped login page, fixed 3 bugs, reviewed 5 PRs..."
               rows={3}
               required
               minLength={10}
-              className="w-full px-4 py-3 bg-dark-pure/50 border border-brand-green/30 rounded-xl
-                       text-light-DEFAULT placeholder-text-muted resize-none
-                       focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50
-                       transition-all duration-200"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-text-muted/40 resize-none focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50 transition-all"
             />
-          </div>
+          </FormField>
 
           {/* Blockers */}
-          <div>
-            <label className="block text-sm font-medium text-text-light mb-2">
-              Blockers <span className="text-text-muted">(optional)</span>
-            </label>
+          <FormField label="Blockers" optional>
             <textarea
               name="blockers"
               value={formData.blockers}
               onChange={handleChange}
               placeholder="Any obstacles or challenges preventing progress?"
               rows={2}
-              className="w-full px-4 py-3 bg-dark-pure/50 border border-brand-green/30 rounded-xl
-                       text-light-DEFAULT placeholder-text-muted resize-none
-                       focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50
-                       transition-all duration-200"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-text-muted/40 resize-none focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50 transition-all"
             />
-          </div>
+          </FormField>
 
           {/* Reflection */}
-          <div>
-            <label className="block text-sm font-medium text-text-light mb-2">
-              Reflection <span className="text-text-muted">(optional)</span>
-            </label>
+          <FormField label="Reflection" optional hint="What did you learn? Any insights to share?">
             <textarea
               name="reflection"
               value={formData.reflection}
               onChange={handleChange}
-              placeholder="What did you learn this week? Any insights?"
+              placeholder="Share any learnings, a-ha moments, or observations..."
               rows={2}
-              className="w-full px-4 py-3 bg-dark-pure/50 border border-brand-green/30 rounded-xl
-                       text-light-DEFAULT placeholder-text-muted resize-none
-                       focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50
-                       transition-all duration-200"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-text-muted/40 resize-none focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50 transition-all"
             />
-          </div>
+          </FormField>
 
           {/* Mood & Hours */}
           <div className="grid sm:grid-cols-2 gap-6 pt-2">
             {/* Mood */}
-            <div>
-              <label className="block text-sm font-medium text-text-light mb-3">
-                How are you feeling? <span className="text-text-muted">(optional)</span>
-              </label>
+            <FormField label="How are you feeling?" optional>
               <div className="flex gap-2">
-                {MOOD_OPTIONS.map(option => (
-                  <button
+                {MOOD_OPTIONS.map((option, index) => (
+                  <motion.button
                     key={option.value}
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, mood: option.value }))}
-                    className={`
-                      flex-1 py-2 rounded-lg text-2xl transition-all
-                      ${formData.mood === option.value
-                        ? 'bg-brand-green/20 border-2 border-brand-green scale-110'
-                        : 'bg-dark-pure/50 border border-brand-green/20 hover:border-brand-green/40'
-                      }
-                    `}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`flex-1 py-3 rounded-xl text-2xl transition-all duration-200 ${
+                      formData.mood === option.value
+                        ? `bg-gradient-to-br ${option.color} border-2 border-white/20 shadow-lg`
+                        : 'bg-white/5 border border-white/10 hover:border-white/20'
+                    }`}
                     title={option.label}
                   >
-                    {option.emoji}
-                  </button>
+                    <motion.span
+                      animate={formData.mood === option.value ? { scale: [1, 1.2, 1] } : {}}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {option.emoji}
+                    </motion.span>
+                  </motion.button>
                 ))}
               </div>
-              {formData.mood > 0 && (
-                <p className="text-center text-text-muted text-sm mt-2">
-                  {MOOD_OPTIONS.find(o => o.value === formData.mood)?.label}
-                </p>
-              )}
-            </div>
+              <AnimatePresence>
+                {formData.mood > 0 && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    className="text-center text-text-muted/60 text-sm mt-3"
+                  >
+                    {MOOD_OPTIONS.find(o => o.value === formData.mood)?.label}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </FormField>
 
             {/* Hours */}
-            <div>
-              <label className="block text-sm font-medium text-text-light mb-3">
-                Hours worked <span className="text-text-muted">(optional)</span>
-              </label>
+            <FormField label="Hours worked" optional>
               <div className="flex items-center gap-3">
                 <input
                   type="number"
@@ -313,32 +404,28 @@ export default function SubmitPage() {
                   min="0"
                   max="100"
                   placeholder="0"
-                  className="w-24 px-4 py-3 bg-dark-pure/50 border border-brand-green/30 rounded-xl
-                           text-light-DEFAULT text-center
-                           focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50"
+                  className="w-24 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-center focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50 transition-all"
                 />
-                <span className="text-text-muted">hours this week</span>
+                <span className="text-text-muted/60">hours this week</span>
               </div>
-            </div>
+            </FormField>
           </div>
 
           {/* Submit Button */}
-          <button
+          <motion.button
             type="submit"
-            disabled={submitting || !formData.internId || !formData.sprintId || !formData.goals || !formData.deliverables}
-            className="w-full py-4 px-6 bg-brand-green hover:bg-primary-dark
-                     text-dark-pure font-semibold rounded-xl
-                     disabled:opacity-50 disabled:cursor-not-allowed
-                     transition-all duration-200 transform hover:scale-[1.02]
-                     shadow-glow-green hover:shadow-glow-lg
-                     flex items-center justify-center gap-2"
+            disabled={submitting || !formData.internId || !formData.sprintId || formData.goals.length < 10 || formData.deliverables.length < 10}
+            whileHover={{ scale: submitting ? 1 : 1.01 }}
+            whileTap={{ scale: submitting ? 1 : 0.99 }}
+            className="w-full py-4 px-6 bg-gradient-to-r from-brand-green to-brand-green/80 hover:from-brand-green hover:to-brand-green text-dark-pure font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg shadow-brand-green/20 hover:shadow-brand-green/40 hover:shadow-xl flex items-center justify-center gap-3"
           >
             {submitting ? (
               <>
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  className="w-5 h-5 border-2 border-dark-pure/30 border-t-dark-pure rounded-full"
+                />
                 Submitting...
               </>
             ) : (
@@ -349,9 +436,9 @@ export default function SubmitPage() {
                 Submit Progress Update
               </>
             )}
-          </button>
+          </motion.button>
         </form>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

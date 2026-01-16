@@ -579,7 +579,7 @@ export async function generateCoffeeChatPairings(sprintId: number): Promise<Coff
   `;
 
   const recentPairs = new Set(
-    recentPairings.map((p: { intern_1_id: number; intern_2_id: number }) =>
+    (recentPairings as { intern_1_id: number; intern_2_id: number }[]).map(p =>
       `${Math.min(p.intern_1_id, p.intern_2_id)}-${Math.max(p.intern_1_id, p.intern_2_id)}`
     )
   );
