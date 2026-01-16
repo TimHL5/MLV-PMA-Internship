@@ -23,7 +23,7 @@ export default function InternalLoginPage() {
       });
 
       if (response.ok) {
-        router.push('/internal/submit');
+        router.push('/internal/home');
       } else {
         const data = await response.json();
         setError(data.error || 'Invalid access code');

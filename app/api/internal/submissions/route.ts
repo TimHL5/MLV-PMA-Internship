@@ -42,8 +42,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { internId, sprintId, goals, deliverables, blockers, reflection } = await request.json();
-    
+    const { internId, sprintId, goals, deliverables, blockers, reflection, mood, hoursWorked } = await request.json();
+
     // Validation
     if (!internId || !sprintId) {
       return NextResponse.json(
@@ -73,6 +73,8 @@ export async function POST(request: NextRequest) {
       deliverables: deliverables.trim(),
       blockers: blockers?.trim() || undefined,
       reflection: reflection?.trim() || undefined,
+      mood: mood || undefined,
+      hoursWorked: hoursWorked || undefined,
     });
 
     return NextResponse.json(submission, { status: 201 });

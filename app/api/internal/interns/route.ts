@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { name, email } = await request.json();
-    
+    const { name, email, location, timezone, role } = await request.json();
+
     if (!name) {
       return NextResponse.json(
         { error: 'Name is required' },
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const intern = await createIntern(name, email);
+    const intern = await createIntern(name, email, location, timezone, role);
     return NextResponse.json(intern, { status: 201 });
   } catch (error) {
     console.error('Error creating intern:', error);
