@@ -13,32 +13,50 @@ async function seedTeam(key: string | null) {
     // Clear existing interns
     await sql`DELETE FROM interns`;
 
-    // Add team members
+    // Also clear related data to avoid foreign key issues
+    await sql`DELETE FROM submissions`;
+    await sql`DELETE FROM high_fives`;
+    await sql`DELETE FROM coffee_chats`;
+    await sql`DELETE FROM one_on_ones`;
+    await sql`DELETE FROM tasks`;
+
+    // Add team members - MLV 2026 Cohort
     const teamMembers = [
-      // Admins
-      { name: 'Tim', email: 'tim@mlv.com', role: 'admin' },
-      { name: 'Dylan', email: 'dylan@mlv.com', role: 'admin' },
+      // Admins (Co-founders)
+      { name: 'Tim', email: 'tim@mlvignite.com', role: 'admin', location: 'Boston' },
+      { name: 'Dylan', email: 'dylan@mlvignite.com', role: 'admin', location: 'Hong Kong' },
       // Interns
-      { name: 'Tina', email: 'tina@mlv.com', role: 'intern' },
-      { name: 'Kim Ha', email: 'kimha@mlv.com', role: 'intern' },
-      { name: 'Linh', email: 'linh@mlv.com', role: 'intern' },
-      { name: 'Kim', email: 'kim@mlv.com', role: 'intern' },
-      { name: 'Tiffany', email: 'tiffany@mlv.com', role: 'intern' },
+      { name: 'Tina', email: 'tina@mlvignite.com', role: 'intern', location: null },
+      { name: 'Vanessa', email: 'vanessa@mlvignite.com', role: 'intern', location: null },
+      { name: 'Kim', email: 'kim@mlvignite.com', role: 'intern', location: null },
+      { name: 'Linh', email: 'linh@mlvignite.com', role: 'intern', location: null },
+      { name: 'Tiffany', email: 'tiffany@mlvignite.com', role: 'intern', location: null },
     ];
 
     const inserted = [];
     for (const member of teamMembers) {
       const result = await sql`
-        INSERT INTO interns (name, email, role)
-        VALUES (${member.name}, ${member.email}, ${member.role})
+        INSERT INTO interns (name, email, role, location)
+        VALUES (${member.name}, ${member.email}, ${member.role}, ${member.location})
         RETURNING *
       `;
       inserted.push(result[0]);
     }
 
+    // Create a default active sprint
+    await sql`DELETE FROM sprints`;
+    await sql`
+      INSERT INTO sprints (name, start_date, end_date, is_active)
+      VALUES ('Sprint 1 - Jan 16-23', '2025-01-16', '2025-01-23', true)
+    `;
+
     return NextResponse.json({
       success: true,
-      message: 'Team members updated',
+      message: 'Team seeded successfully!',
+      team: {
+        admins: inserted.filter(m => m.role === 'admin').map(m => m.name),
+        interns: inserted.filter(m => m.role === 'intern').map(m => m.name),
+      },
       members: inserted
     });
   } catch (error) {
