@@ -22,12 +22,26 @@ export async function GET(request: Request) {
     log('🚀 Starting full database setup...');
 
     // ==========================================
+    // DROP AND RECREATE TABLES (clean slate)
+    // ==========================================
+
+    log('0. Dropping existing tables for clean setup...');
+    await sql`DROP TABLE IF EXISTS task_comments CASCADE`;
+    await sql`DROP TABLE IF EXISTS tasks CASCADE`;
+    await sql`DROP TABLE IF EXISTS coffee_chats CASCADE`;
+    await sql`DROP TABLE IF EXISTS one_on_ones CASCADE`;
+    await sql`DROP TABLE IF EXISTS high_fives CASCADE`;
+    await sql`DROP TABLE IF EXISTS submissions CASCADE`;
+    await sql`DROP TABLE IF EXISTS sprints CASCADE`;
+    await sql`DROP TABLE IF EXISTS interns CASCADE`;
+
+    // ==========================================
     // CREATE BASE TABLES
     // ==========================================
 
     log('1. Creating interns table...');
     await sql`
-      CREATE TABLE IF NOT EXISTS interns (
+      CREATE TABLE interns (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
         email VARCHAR(100) UNIQUE,
@@ -42,7 +56,7 @@ export async function GET(request: Request) {
 
     log('2. Creating sprints table...');
     await sql`
-      CREATE TABLE IF NOT EXISTS sprints (
+      CREATE TABLE sprints (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
         description TEXT,
@@ -55,7 +69,7 @@ export async function GET(request: Request) {
 
     log('3. Creating submissions table...');
     await sql`
-      CREATE TABLE IF NOT EXISTS submissions (
+      CREATE TABLE submissions (
         id SERIAL PRIMARY KEY,
         intern_id INTEGER REFERENCES interns(id) ON DELETE CASCADE,
         sprint_id INTEGER REFERENCES sprints(id) ON DELETE CASCADE,
@@ -73,7 +87,7 @@ export async function GET(request: Request) {
 
     log('4. Creating high_fives table...');
     await sql`
-      CREATE TABLE IF NOT EXISTS high_fives (
+      CREATE TABLE high_fives (
         id SERIAL PRIMARY KEY,
         from_intern_id INTEGER REFERENCES interns(id) ON DELETE CASCADE,
         to_intern_id INTEGER REFERENCES interns(id) ON DELETE CASCADE,
@@ -87,7 +101,7 @@ export async function GET(request: Request) {
 
     log('5. Creating one_on_ones table...');
     await sql`
-      CREATE TABLE IF NOT EXISTS one_on_ones (
+      CREATE TABLE one_on_ones (
         id SERIAL PRIMARY KEY,
         intern_id INTEGER REFERENCES interns(id) ON DELETE CASCADE,
         sprint_id INTEGER REFERENCES sprints(id),
@@ -106,7 +120,7 @@ export async function GET(request: Request) {
 
     log('6. Creating coffee_chats table...');
     await sql`
-      CREATE TABLE IF NOT EXISTS coffee_chats (
+      CREATE TABLE coffee_chats (
         id SERIAL PRIMARY KEY,
         intern_1_id INTEGER REFERENCES interns(id) ON DELETE CASCADE,
         intern_2_id INTEGER REFERENCES interns(id) ON DELETE CASCADE,
@@ -121,7 +135,7 @@ export async function GET(request: Request) {
 
     log('7. Creating tasks table...');
     await sql`
-      CREATE TABLE IF NOT EXISTS tasks (
+      CREATE TABLE tasks (
         id SERIAL PRIMARY KEY,
         sprint_id INTEGER REFERENCES sprints(id) ON DELETE CASCADE,
         title VARCHAR(200) NOT NULL,
@@ -142,7 +156,7 @@ export async function GET(request: Request) {
 
     log('8. Creating task_comments table...');
     await sql`
-      CREATE TABLE IF NOT EXISTS task_comments (
+      CREATE TABLE task_comments (
         id SERIAL PRIMARY KEY,
         task_id INTEGER REFERENCES tasks(id) ON DELETE CASCADE,
         intern_id INTEGER REFERENCES interns(id) ON DELETE CASCADE,
@@ -156,31 +170,21 @@ export async function GET(request: Request) {
     // ==========================================
 
     log('9. Creating indexes...');
-    await sql`CREATE INDEX IF NOT EXISTS idx_submissions_intern ON submissions(intern_id)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_submissions_sprint ON submissions(sprint_id)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_high_fives_to ON high_fives(to_intern_id)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_high_fives_from ON high_fives(from_intern_id)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_tasks_sprint ON tasks(sprint_id)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_tasks_assignee ON tasks(assignee_id)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_one_on_ones_intern ON one_on_ones(intern_id)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_coffee_chats_sprint ON coffee_chats(sprint_id)`;
+    await sql`CREATE INDEX idx_submissions_intern ON submissions(intern_id)`;
+    await sql`CREATE INDEX idx_submissions_sprint ON submissions(sprint_id)`;
+    await sql`CREATE INDEX idx_high_fives_to ON high_fives(to_intern_id)`;
+    await sql`CREATE INDEX idx_high_fives_from ON high_fives(from_intern_id)`;
+    await sql`CREATE INDEX idx_tasks_sprint ON tasks(sprint_id)`;
+    await sql`CREATE INDEX idx_tasks_assignee ON tasks(assignee_id)`;
+    await sql`CREATE INDEX idx_tasks_status ON tasks(status)`;
+    await sql`CREATE INDEX idx_one_on_ones_intern ON one_on_ones(intern_id)`;
+    await sql`CREATE INDEX idx_coffee_chats_sprint ON coffee_chats(sprint_id)`;
 
     // ==========================================
     // SEED DATA
     // ==========================================
 
-    log('10. Clearing existing data...');
-    await sql`DELETE FROM task_comments`;
-    await sql`DELETE FROM tasks`;
-    await sql`DELETE FROM coffee_chats`;
-    await sql`DELETE FROM one_on_ones`;
-    await sql`DELETE FROM high_fives`;
-    await sql`DELETE FROM submissions`;
-    await sql`DELETE FROM sprints`;
-    await sql`DELETE FROM interns`;
-
-    log('11. Adding team members...');
+    log('10. Adding team members...');
     const teamMembers = [
       { name: 'Tim', email: 'tim@mlvignite.com', role: 'admin', location: 'Boston' },
       { name: 'Dylan', email: 'dylan@mlvignite.com', role: 'admin', location: 'Hong Kong' },
@@ -201,7 +205,7 @@ export async function GET(request: Request) {
       insertedMembers.push(result[0]);
     }
 
-    log('12. Creating active sprint...');
+    log('11. Creating active sprint...');
     await sql`
       INSERT INTO sprints (name, start_date, end_date, is_active)
       VALUES ('Sprint 1 - Jan 16-23', '2025-01-16', '2025-01-23', true)
