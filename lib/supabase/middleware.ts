@@ -32,32 +32,40 @@ export async function updateSession(request: NextRequest) {
   );
 
   // Do not run code between createServerClient and supabase.auth.getUser()
-  // A simple mistake could make it very hard to debug issues with users being randomly logged out.
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Define protected routes
+  // Define protected routes - includes /internal and /dashboard
   const isProtectedRoute =
+    request.nextUrl.pathname.startsWith('/internal/home') ||
+    request.nextUrl.pathname.startsWith('/internal/submit') ||
+    request.nextUrl.pathname.startsWith('/internal/board') ||
+    request.nextUrl.pathname.startsWith('/internal/team') ||
+    request.nextUrl.pathname.startsWith('/internal/me') ||
+    request.nextUrl.pathname.startsWith('/internal/admin') ||
+    request.nextUrl.pathname.startsWith('/internal/one-on-one') ||
+    request.nextUrl.pathname.startsWith('/internal/dashboard') ||
     request.nextUrl.pathname.startsWith('/dashboard') ||
     request.nextUrl.pathname.startsWith('/app');
 
   // Define auth routes
   const isAuthRoute =
-    request.nextUrl.pathname.startsWith('/login') ||
+    request.nextUrl.pathname === '/login' ||
+    request.nextUrl.pathname === '/internal' ||
     request.nextUrl.pathname.startsWith('/auth');
 
   // If user is not logged in and trying to access protected route, redirect to login
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = '/login';
+    url.pathname = '/internal';
     return NextResponse.redirect(url);
   }
 
-  // If user is logged in and trying to access auth routes, redirect to dashboard
-  if (user && isAuthRoute && !request.nextUrl.pathname.startsWith('/auth/callback')) {
+  // If user is logged in and trying to access login page, redirect to dashboard
+  if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/internal')) {
     const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
+    url.pathname = '/internal/home';
     return NextResponse.redirect(url);
   }
 

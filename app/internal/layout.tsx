@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createClient } from '@/lib/supabase/client';
 
 interface Intern {
   id: number;
@@ -286,7 +287,8 @@ export default function InternalLayout({
   }, [currentUser]);
 
   const handleLogout = async () => {
-    await fetch('/api/internal/auth', { method: 'DELETE' });
+    const supabase = createClient();
+    await supabase.auth.signOut();
     localStorage.removeItem('mlv_current_user_id');
     router.push('/internal');
   };
