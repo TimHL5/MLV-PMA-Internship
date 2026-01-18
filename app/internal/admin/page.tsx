@@ -32,11 +32,29 @@ interface OneOnOne {
   meeting_completed_at: string | null;
 }
 
+interface Sprint {
+  id: number;
+  name: string;
+  is_active: boolean;
+  start_date: string | null;
+  end_date: string | null;
+}
+
+interface Intern {
+  id: number;
+  name: string;
+  email: string | null;
+  role: string;
+  location: string | null;
+}
+
 export default function AdminPage() {
-  const { currentUser, activeSprint, interns, sprints, refreshData } = usePortal();
+  const { profile, activeSprint, teams, refreshData } = usePortal();
   const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'one-on-ones' | 'coffee-chats' | 'manage'>('overview');
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [oneOnOnes, setOneOnOnes] = useState<OneOnOne[]>([]);
+  const [sprints, setSprints] = useState<Sprint[]>([]);
+  const [interns, setInterns] = useState<Intern[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSprint, setSelectedSprint] = useState('');
   const [expandedSubmission, setExpandedSubmission] = useState<number | null>(null);
@@ -53,6 +71,11 @@ export default function AdminPage() {
   const [newSprintForm, setNewSprintForm] = useState({ name: '', startDate: '', endDate: '' });
 
   useEffect(() => {
+    fetchSprints();
+    fetchInterns();
+  }, []);
+
+  useEffect(() => {
     if (activeSprint) {
       setSelectedSprint(activeSprint.id.toString());
     }
@@ -61,6 +84,30 @@ export default function AdminPage() {
   useEffect(() => {
     fetchData();
   }, [selectedSprint]);
+
+  const fetchSprints = async () => {
+    try {
+      const response = await fetch('/api/internal/sprints');
+      if (response.ok) {
+        const data = await response.json();
+        setSprints(data);
+      }
+    } catch {
+      console.error('Failed to fetch sprints');
+    }
+  };
+
+  const fetchInterns = async () => {
+    try {
+      const response = await fetch('/api/internal/interns');
+      if (response.ok) {
+        const data = await response.json();
+        setInterns(data);
+      }
+    } catch {
+      console.error('Failed to fetch interns');
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -204,7 +251,7 @@ export default function AdminPage() {
     });
   };
 
-  if (currentUser?.role !== 'admin') {
+  if (profile?.role !== 'admin') {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <div className="w-16 h-16 rounded-full bg-accent-coral/20 flex items-center justify-center mb-4">

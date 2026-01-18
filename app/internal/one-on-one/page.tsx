@@ -16,7 +16,7 @@ interface OneOnOne {
 }
 
 export default function OneOnOnePage() {
-  const { currentUser, activeSprint } = usePortal();
+  const { profile, activeSprint } = usePortal();
   const [oneOnOne, setOneOnOne] = useState<OneOnOne | null>(null);
   const [history, setHistory] = useState<OneOnOne[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,18 +31,18 @@ export default function OneOnOnePage() {
   });
 
   useEffect(() => {
-    if (currentUser && activeSprint) {
+    if (profile && activeSprint) {
       fetchOneOnOne();
       fetchHistory();
     } else {
       setLoading(false);
     }
-  }, [currentUser, activeSprint]);
+  }, [profile, activeSprint]);
 
   const fetchOneOnOne = async () => {
     try {
       const response = await fetch(
-        `/api/internal/one-on-ones?internId=${currentUser?.id}&sprintId=${activeSprint?.id}`
+        `/api/internal/one-on-ones?profileId=${profile?.id}&sprintId=${activeSprint?.id}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -65,10 +65,10 @@ export default function OneOnOnePage() {
 
   const fetchHistory = async () => {
     try {
-      const response = await fetch(`/api/internal/one-on-ones?internId=${currentUser?.id}`);
+      const response = await fetch(`/api/internal/one-on-ones?profileId=${profile?.id}`);
       if (response.ok) {
         const data = await response.json();
-        setHistory(data.filter((o: OneOnOne) => o.sprint_id !== activeSprint?.id));
+        setHistory(data.filter((o: OneOnOne) => String(o.sprint_id) !== activeSprint?.id));
       }
     } catch (error) {
       console.error('Failed to fetch history');
@@ -77,7 +77,7 @@ export default function OneOnOnePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser || !activeSprint) return;
+    if (!profile || !activeSprint) return;
 
     setSaving(true);
     setSuccess(false);
@@ -87,7 +87,7 @@ export default function OneOnOnePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          internId: currentUser.id,
+          profileId: profile.id,
           sprintId: activeSprint.id,
           proudOf: formData.proudOf || undefined,
           needHelp: formData.needHelp || undefined,
@@ -117,7 +117,7 @@ export default function OneOnOnePage() {
     });
   };
 
-  if (!currentUser) {
+  if (!profile) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <div className="w-16 h-16 rounded-full bg-accent-teal/20 flex items-center justify-center mb-4">

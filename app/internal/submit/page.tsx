@@ -59,14 +59,14 @@ function FormField({
 }
 
 export default function SubmitPage() {
-  const { currentUser, activeSprint, interns, sprints } = usePortal();
+  const { profile, activeSprint, selectedTeam } = usePortal();
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
   // Form state
   const [formData, setFormData] = useState({
-    internId: '',
+    profileId: '',
     sprintId: '',
     goals: '',
     deliverables: '',
@@ -79,22 +79,22 @@ export default function SubmitPage() {
   // Form progress
   const getProgress = () => {
     let filled = 0;
-    if (formData.internId) filled++;
+    if (formData.profileId) filled++;
     if (formData.sprintId) filled++;
     if (formData.goals.length >= 10) filled++;
     if (formData.deliverables.length >= 10) filled++;
     return (filled / 4) * 100;
   };
 
-  // Pre-fill intern and sprint if available
+  // Pre-fill profile and sprint if available
   useEffect(() => {
-    if (currentUser && !formData.internId) {
-      setFormData(prev => ({ ...prev, internId: currentUser.id.toString() }));
+    if (profile && !formData.profileId) {
+      setFormData(prev => ({ ...prev, profileId: profile.id }));
     }
     if (activeSprint && !formData.sprintId) {
-      setFormData(prev => ({ ...prev, sprintId: activeSprint.id.toString() }));
+      setFormData(prev => ({ ...prev, sprintId: activeSprint.id }));
     }
-  }, [currentUser, activeSprint]);
+  }, [profile, activeSprint]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,8 +106,9 @@ export default function SubmitPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          internId: parseInt(formData.internId),
-          sprintId: parseInt(formData.sprintId),
+          profileId: formData.profileId,
+          sprintId: formData.sprintId,
+          teamId: selectedTeam?.id,
           goals: formData.goals,
           deliverables: formData.deliverables,
           blockers: formData.blockers || undefined,
@@ -259,42 +260,40 @@ export default function SubmitPage() {
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-brand-yellow/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
         <form onSubmit={handleSubmit} className="relative space-y-6">
-          {/* Intern & Sprint Selection */}
+          {/* User & Sprint Info */}
           <div className="grid sm:grid-cols-2 gap-4">
-            <FormField label="Your Name" required>
-              <select
-                name="internId"
-                value={formData.internId}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50 transition-all"
-              >
-                <option value="" className="bg-dark-card">Select your name</option>
-                {interns.map(intern => (
-                  <option key={intern.id} value={intern.id} className="bg-dark-card">
-                    {intern.name}
-                  </option>
-                ))}
-              </select>
+            <FormField label="Submitting as">
+              <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
+                <div className="w-8 h-8 rounded-lg bg-brand-green/20 flex items-center justify-center text-brand-green font-medium">
+                  {profile?.full_name?.charAt(0).toUpperCase() || '?'}
+                </div>
+                <span className="text-white font-medium">{profile?.full_name || 'Loading...'}</span>
+              </div>
             </FormField>
 
-            <FormField label="Sprint" required>
-              <select
-                name="sprintId"
-                value={formData.sprintId}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50 transition-all"
-              >
-                <option value="" className="bg-dark-card">Select sprint</option>
-                {sprints.map(sprint => (
-                  <option key={sprint.id} value={sprint.id} className="bg-dark-card">
-                    {sprint.name} {sprint.is_active ? '(Current)' : ''}
-                  </option>
-                ))}
-              </select>
+            <FormField label="Sprint">
+              <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
+                <span className="w-2 h-2 rounded-full bg-brand-green animate-pulse" />
+                <span className="text-white">{activeSprint?.name || 'No active sprint'}</span>
+              </div>
             </FormField>
           </div>
+
+          {/* Team Selection - if team not selected */}
+          {!selectedTeam && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 bg-brand-yellow/10 border border-brand-yellow/20 rounded-xl"
+            >
+              <p className="text-brand-yellow text-sm flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                Please select your team in the sidebar before submitting.
+              </p>
+            </motion.div>
+          )}
 
           {/* Goals */}
           <FormField label="Goals for This Week" required hint="What do you plan to accomplish? Be specific.">
@@ -414,7 +413,7 @@ export default function SubmitPage() {
           {/* Submit Button */}
           <motion.button
             type="submit"
-            disabled={submitting || !formData.internId || !formData.sprintId || formData.goals.length < 10 || formData.deliverables.length < 10}
+            disabled={submitting || !formData.profileId || !formData.sprintId || formData.goals.length < 10 || formData.deliverables.length < 10}
             whileHover={{ scale: submitting ? 1 : 1.01 }}
             whileTap={{ scale: submitting ? 1 : 0.99 }}
             className="w-full py-4 px-6 bg-gradient-to-r from-brand-green to-brand-green/80 hover:from-brand-green hover:to-brand-green text-dark-pure font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg shadow-brand-green/20 hover:shadow-brand-green/40 hover:shadow-xl flex items-center justify-center gap-3"

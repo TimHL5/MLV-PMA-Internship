@@ -161,9 +161,15 @@ function TaskCard({
   );
 }
 
+interface Intern {
+  id: number;
+  name: string;
+}
+
 export default function BoardPage() {
-  const { currentUser, activeSprint, interns } = usePortal();
+  const { profile, activeSprint, selectedTeam, teams } = usePortal();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [interns, setInterns] = useState<Intern[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -182,10 +188,26 @@ export default function BoardPage() {
   });
 
   useEffect(() => {
+    fetchInterns();
+  }, []);
+
+  useEffect(() => {
     if (activeSprint) {
       fetchTasks();
     }
   }, [activeSprint]);
+
+  const fetchInterns = async () => {
+    try {
+      const response = await fetch('/api/internal/interns');
+      if (response.ok) {
+        const data = await response.json();
+        setInterns(data);
+      }
+    } catch {
+      console.error('Failed to fetch interns');
+    }
+  };
 
   const fetchTasks = async () => {
     try {
@@ -215,7 +237,7 @@ export default function BoardPage() {
           description: newTask.description || undefined,
           priority: newTask.priority,
           assigneeId: newTask.assigneeId ? parseInt(newTask.assigneeId) : undefined,
-          createdById: currentUser?.id,
+          createdByProfileId: profile?.id,
           dueDate: newTask.dueDate || undefined,
         }),
       });
@@ -275,14 +297,14 @@ export default function BoardPage() {
   };
 
   const handleAddComment = async () => {
-    if (!selectedTask || !currentUser || !newComment.trim()) return;
+    if (!selectedTask || !profile || !newComment.trim()) return;
 
     try {
       await fetch(`/api/internal/tasks/${selectedTask.id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          internId: currentUser.id,
+          profileId: profile.id,
           content: newComment,
         }),
       });

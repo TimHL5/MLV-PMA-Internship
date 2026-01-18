@@ -37,27 +37,44 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Define protected routes
+  const pathname = request.nextUrl.pathname;
+
+  // Define protected routes - /internal/* except /internal itself (login page)
+  const isInternalProtectedRoute =
+    pathname.startsWith('/internal/') && pathname !== '/internal';
+
+  const isInternalLoginPage = pathname === '/internal';
+
+  // Define other protected routes
   const isProtectedRoute =
-    request.nextUrl.pathname.startsWith('/dashboard') ||
-    request.nextUrl.pathname.startsWith('/app');
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/app') ||
+    isInternalProtectedRoute;
 
   // Define auth routes
   const isAuthRoute =
-    request.nextUrl.pathname.startsWith('/login') ||
-    request.nextUrl.pathname.startsWith('/auth');
+    pathname.startsWith('/login') ||
+    (pathname.startsWith('/auth') && !pathname.startsWith('/auth/callback'));
 
   // If user is not logged in and trying to access protected route, redirect to login
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = '/login';
+    // Redirect to /internal login page for internal routes
+    url.pathname = isInternalProtectedRoute ? '/internal' : '/login';
     return NextResponse.redirect(url);
   }
 
-  // If user is logged in and trying to access auth routes, redirect to dashboard
-  if (user && isAuthRoute && !request.nextUrl.pathname.startsWith('/auth/callback')) {
+  // If user is logged in and on /internal login page, redirect to /internal/home
+  if (user && isInternalLoginPage) {
     const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
+    url.pathname = '/internal/home';
+    return NextResponse.redirect(url);
+  }
+
+  // If user is logged in and trying to access auth routes, redirect to internal/home
+  if (user && isAuthRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/internal/home';
     return NextResponse.redirect(url);
   }
 

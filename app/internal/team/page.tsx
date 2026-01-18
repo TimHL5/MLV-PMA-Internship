@@ -121,7 +121,7 @@ function Skeleton({ className = '' }: { className?: string }) {
 }
 
 export default function TeamPage() {
-  const { currentUser, activeSprint, interns } = usePortal();
+  const { profile, activeSprint, selectedTeam } = usePortal();
   const [highFives, setHighFives] = useState<HighFive[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -153,7 +153,7 @@ export default function TeamPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser || !toInternId || !message) return;
+    if (!profile || !toInternId || !message) return;
 
     setSending(true);
     try {
@@ -161,11 +161,12 @@ export default function TeamPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fromInternId: currentUser.id,
-          toInternId: parseInt(toInternId),
+          fromProfileId: profile.id,
+          toProfileId: toInternId,
           message,
           category: category || undefined,
           sprintId: activeSprint?.id,
+          teamId: selectedTeam?.id,
         }),
       });
 
@@ -260,7 +261,7 @@ export default function TeamPage() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
           onClick={() => setShowModal(true)}
-          disabled={!currentUser}
+          disabled={!profile}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="group inline-flex items-center justify-center gap-2 px-5 py-3 bg-brand-yellow hover:bg-brand-yellow/90 text-[#0a0a0a] font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -371,7 +372,7 @@ export default function TeamPage() {
             </p>
             <motion.button
               onClick={() => setShowModal(true)}
-              disabled={!currentUser}
+              disabled={!profile}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="inline-flex items-center gap-2 px-6 py-3 bg-brand-yellow text-[#0a0a0a] font-semibold rounded-xl hover:bg-brand-yellow/90 transition-colors disabled:opacity-50"
@@ -460,21 +461,15 @@ export default function TeamPage() {
                   <label className="block text-sm font-medium text-white/70 mb-2">
                     Who are you recognizing? <span className="text-red-400">*</span>
                   </label>
-                  <select
+                  <input
+                    type="text"
                     value={toInternId}
                     onChange={(e) => setToInternId(e.target.value)}
+                    placeholder="Enter teammate's name or email..."
                     required
-                    className="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-brand-green/50 focus:ring-1 focus:ring-brand-green/30 transition-all"
-                  >
-                    <option value="" className="bg-[#111111]">Select teammate...</option>
-                    {interns
-                      .filter(i => i.id !== currentUser?.id)
-                      .map(intern => (
-                        <option key={intern.id} value={intern.id} className="bg-[#111111]">
-                          {intern.name}
-                        </option>
-                      ))}
-                  </select>
+                    className="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-brand-green/50 focus:ring-1 focus:ring-brand-green/30 transition-all"
+                  />
+                  <p className="text-white/40 text-xs mt-1.5">Type the name of the person you want to recognize</p>
                 </div>
 
                 {/* Message */}

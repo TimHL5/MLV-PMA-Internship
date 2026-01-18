@@ -5,39 +5,59 @@ import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createClient } from '@/lib/supabase/client';
+import { User } from '@supabase/supabase-js';
 
-interface Intern {
-  id: number;
-  name: string;
-  email: string | null;
+interface Profile {
+  id: string;
+  email: string;
+  full_name: string;
   avatar_url: string | null;
-  location: string | null;
   role: string;
 }
 
+interface Team {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 interface Sprint {
-  id: number;
+  id: string;
   name: string;
   start_date: string | null;
   end_date: string | null;
   is_active: boolean;
 }
 
+// Available teams
+const TEAMS: Team[] = [
+  { id: 'hcmc-bas', name: 'HCMC BAs', slug: 'hcmc-bas' },
+  { id: 'hanoi-bas', name: 'Hanoi BAs', slug: 'hanoi-bas' },
+  { id: 'hk-bas', name: 'HK BAs', slug: 'hk-bas' },
+  { id: 'jakarta-bas', name: 'Jakarta BAs', slug: 'jakarta-bas' },
+  { id: 'operation-leads', name: 'Operation Leads', slug: 'operation-leads' },
+  { id: 'pm-interns', name: 'PM Interns', slug: 'pm-interns' },
+  { id: 'founders', name: 'Founders', slug: 'founders' },
+];
+
 interface PortalContextType {
-  currentUser: Intern | null;
-  setCurrentUser: (user: Intern | null) => void;
+  user: User | null;
+  profile: Profile | null;
+  selectedTeam: Team | null;
+  setSelectedTeam: (team: Team | null) => void;
   activeSprint: Sprint | null;
-  interns: Intern[];
-  sprints: Sprint[];
+  teams: Team[];
   refreshData: () => Promise<void>;
 }
 
 const PortalContext = createContext<PortalContextType>({
-  currentUser: null,
-  setCurrentUser: () => {},
+  user: null,
+  profile: null,
+  selectedTeam: null,
+  setSelectedTeam: () => {},
   activeSprint: null,
-  interns: [],
-  sprints: [],
+  teams: TEAMS,
   refreshData: async () => {},
 });
 
@@ -228,44 +248,69 @@ export default function InternalLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<Intern | null>(null);
-  const [interns, setInterns] = useState<Intern[]>([]);
-  const [sprints, setSprints] = useState<Sprint[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [activeSprint, setActiveSprint] = useState<Sprint | null>(null);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [teamMenuOpen, setTeamMenuOpen] = useState(false);
 
   const isLoginPage = pathname === '/internal';
 
   const refreshData = async () => {
     try {
-      const [internsRes, sprintsRes] = await Promise.all([
-        fetch('/api/internal/interns'),
-        fetch('/api/internal/sprints'),
-      ]);
+      // Get authenticated user
+      const { data: { user: authUser } } = await supabase.auth.getUser();
 
-      if (internsRes.status === 401) {
+      if (!authUser) {
         router.push('/internal');
         return;
       }
 
-      const internsData = await internsRes.json();
-      const sprintsData = await sprintsRes.json();
+      setUser(authUser);
 
-      setInterns(internsData);
-      setSprints(sprintsData);
+      // Get user profile
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .single();
 
-      const active = sprintsData.find((s: Sprint) => s.is_active) || sprintsData[0];
-      setActiveSprint(active || null);
+      if (profileData) {
+        setProfile(profileData);
+      } else {
+        // Create profile if doesn't exist (fallback)
+        setProfile({
+          id: authUser.id,
+          email: authUser.email || '',
+          full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+          avatar_url: authUser.user_metadata?.avatar_url || null,
+          role: 'intern',
+        });
+      }
 
-      const savedUserId = localStorage.getItem('mlv_current_user_id');
-      if (savedUserId) {
-        const user = internsData.find((i: Intern) => i.id === parseInt(savedUserId));
-        if (user) setCurrentUser(user);
+      // Restore saved team from localStorage
+      const savedTeamId = localStorage.getItem('mlv_selected_team');
+      if (savedTeamId) {
+        const team = TEAMS.find(t => t.id === savedTeamId);
+        if (team) setSelectedTeam(team);
+      }
+
+      // Get active sprint (if sprints API exists)
+      try {
+        const sprintsRes = await fetch('/api/internal/sprints');
+        if (sprintsRes.ok) {
+          const sprintsData = await sprintsRes.json();
+          const active = sprintsData.find((s: Sprint) => s.is_active) || sprintsData[0];
+          setActiveSprint(active || null);
+        }
+      } catch {
+        // Sprint API might not exist yet
       }
     } catch (error) {
-      console.error('Failed to load data');
+      console.error('Failed to load data:', error);
     } finally {
       setLoading(false);
     }
@@ -280,14 +325,14 @@ export default function InternalLayout({
   }, [isLoginPage]);
 
   useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem('mlv_current_user_id', currentUser.id.toString());
+    if (selectedTeam) {
+      localStorage.setItem('mlv_selected_team', selectedTeam.id);
     }
-  }, [currentUser]);
+  }, [selectedTeam]);
 
   const handleLogout = async () => {
-    await fetch('/api/internal/auth', { method: 'DELETE' });
-    localStorage.removeItem('mlv_current_user_id');
+    await supabase.auth.signOut();
+    localStorage.removeItem('mlv_selected_team');
     router.push('/internal');
   };
 
@@ -300,7 +345,7 @@ export default function InternalLayout({
   }
 
   return (
-    <PortalContext.Provider value={{ currentUser, setCurrentUser, activeSprint, interns, sprints, refreshData }}>
+    <PortalContext.Provider value={{ user, profile, selectedTeam, setSelectedTeam, activeSprint, teams: TEAMS, refreshData }}>
       <div className="min-h-screen bg-[#0a0a0a] flex">
         {/* Ambient background */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -347,39 +392,64 @@ export default function InternalLayout({
               </p>
             </div>
 
-            {/* User selector - Prominent position */}
+            {/* User profile - Display authenticated user */}
             <div className="px-4 py-5 border-b border-white/[0.06]">
-              <p className="text-white/40 text-[10px] uppercase tracking-wider font-medium mb-3 px-2">Your Profile</p>
+              <p className="text-white/40 text-[10px] uppercase tracking-wider font-medium mb-3 px-2">Signed in as</p>
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                {profile?.avatar_url ? (
+                  <Image
+                    src={profile.avatar_url}
+                    alt={profile.full_name}
+                    width={40}
+                    height={40}
+                    className="w-10 h-10 rounded-xl object-cover"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-green/20 to-brand-yellow/10 flex items-center justify-center text-brand-green font-semibold text-sm">
+                    {profile?.full_name?.charAt(0).toUpperCase() || '?'}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">
+                    {profile?.full_name || 'User'}
+                  </p>
+                  <p className="text-white/40 text-xs truncate">
+                    {profile?.email}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Team selector */}
+            <div className="px-4 py-4 border-b border-white/[0.06]">
+              <p className="text-white/40 text-[10px] uppercase tracking-wider font-medium mb-3 px-2">Your Team</p>
               <div className="relative">
                 <motion.button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  onClick={() => setTeamMenuOpen(!teamMenuOpen)}
                   className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
-                    currentUser
+                    selectedTeam
                       ? 'bg-white/[0.04] hover:bg-white/[0.06] border border-white/[0.06]'
-                      : 'bg-brand-green/10 hover:bg-brand-green/15 border border-brand-green/20'
+                      : 'bg-brand-yellow/10 hover:bg-brand-yellow/15 border border-brand-yellow/20'
                   }`}
                   whileTap={{ scale: 0.98 }}
                 >
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-semibold text-sm ${
-                    currentUser
-                      ? 'bg-gradient-to-br from-brand-green/20 to-brand-yellow/10 text-brand-green'
-                      : 'bg-brand-green/20 text-brand-green'
+                    selectedTeam
+                      ? 'bg-gradient-to-br from-brand-yellow/20 to-brand-green/10 text-brand-yellow'
+                      : 'bg-brand-yellow/20 text-brand-yellow'
                   }`}>
-                    {currentUser?.name.charAt(0).toUpperCase() || '?'}
+                    {Icons.team}
                   </div>
                   <div className="flex-1 min-w-0 text-left">
-                    <p className={`text-sm font-medium truncate ${currentUser ? 'text-white' : 'text-brand-green'}`}>
-                      {currentUser?.name || 'Select yourself'}
+                    <p className={`text-sm font-medium truncate ${selectedTeam ? 'text-white' : 'text-brand-yellow'}`}>
+                      {selectedTeam?.name || 'Select your team'}
                     </p>
-                    {currentUser?.location && (
-                      <p className="text-white/40 text-xs truncate">{currentUser.location}</p>
-                    )}
-                    {!currentUser && (
-                      <p className="text-brand-green/60 text-xs">Click to choose</p>
+                    {!selectedTeam && (
+                      <p className="text-brand-yellow/60 text-xs">Click to choose</p>
                     )}
                   </div>
                   <motion.div
-                    animate={{ rotate: userMenuOpen ? 180 : 0 }}
+                    animate={{ rotate: teamMenuOpen ? 180 : 0 }}
                     transition={{ duration: 0.2 }}
                     className="text-white/40"
                   >
@@ -387,9 +457,9 @@ export default function InternalLayout({
                   </motion.div>
                 </motion.button>
 
-                {/* User dropdown */}
+                {/* Team dropdown */}
                 <AnimatePresence>
-                  {userMenuOpen && (
+                  {teamMenuOpen && (
                     <motion.div
                       initial={{ opacity: 0, y: -8, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -397,36 +467,33 @@ export default function InternalLayout({
                       transition={{ duration: 0.15 }}
                       className="absolute top-full left-0 right-0 mt-2 max-h-64 overflow-auto bg-[#141414] border border-white/[0.08] rounded-xl shadow-2xl z-50"
                     >
-                      {interns.map(intern => (
+                      {TEAMS.map(team => (
                         <motion.button
-                          key={intern.id}
+                          key={team.id}
                           onClick={() => {
-                            setCurrentUser(intern);
-                            setUserMenuOpen(false);
+                            setSelectedTeam(team);
+                            setTeamMenuOpen(false);
                           }}
                           className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors
-                            ${currentUser?.id === intern.id
-                              ? 'bg-brand-green/10 text-brand-green'
+                            ${selectedTeam?.id === team.id
+                              ? 'bg-brand-yellow/10 text-brand-yellow'
                               : 'text-white/80 hover:bg-white/[0.04]'
                             }
                           `}
                           whileHover={{ x: 2 }}
                         >
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium ${
-                            currentUser?.id === intern.id
-                              ? 'bg-brand-green/20 text-brand-green'
+                            selectedTeam?.id === team.id
+                              ? 'bg-brand-yellow/20 text-brand-yellow'
                               : 'bg-white/[0.06] text-white/60'
                           }`}>
-                            {intern.name.charAt(0).toUpperCase()}
+                            {team.name.charAt(0)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm truncate">{intern.name}</p>
-                            {intern.role === 'admin' && (
-                              <span className="text-[10px] text-brand-yellow/70 uppercase tracking-wider">Admin</span>
-                            )}
+                            <p className="text-sm truncate">{team.name}</p>
                           </div>
-                          {currentUser?.id === intern.id && (
-                            <span className="text-brand-green">{Icons.check}</span>
+                          {selectedTeam?.id === team.id && (
+                            <span className="text-brand-yellow">{Icons.check}</span>
                           )}
                         </motion.button>
                       ))}
@@ -459,7 +526,7 @@ export default function InternalLayout({
               ))}
 
               {/* Admin section */}
-              {currentUser?.role === 'admin' && (
+              {profile?.role === 'admin' && (
                 <div className="pt-4 mt-4">
                   <div className="flex items-center gap-2 px-4 mb-2">
                     <div className="h-px flex-1 bg-gradient-to-r from-brand-yellow/20 to-transparent" />
@@ -517,13 +584,25 @@ export default function InternalLayout({
                 className="object-contain opacity-80"
               />
 
-              {currentUser ? (
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-green/20 to-brand-yellow/10 flex items-center justify-center text-brand-green text-sm font-semibold"
-                >
-                  {currentUser.name.charAt(0).toUpperCase()}
-                </button>
+              {profile ? (
+                profile.avatar_url ? (
+                  <button onClick={() => setSidebarOpen(true)}>
+                    <Image
+                      src={profile.avatar_url}
+                      alt={profile.full_name}
+                      width={36}
+                      height={36}
+                      className="w-9 h-9 rounded-xl object-cover"
+                    />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setSidebarOpen(true)}
+                    className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-green/20 to-brand-yellow/10 flex items-center justify-center text-brand-green text-sm font-semibold"
+                  >
+                    {profile.full_name.charAt(0).toUpperCase()}
+                  </button>
+                )
               ) : (
                 <div className="w-9 h-9" />
               )}

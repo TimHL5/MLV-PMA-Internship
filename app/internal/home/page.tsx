@@ -264,7 +264,7 @@ function QuickActionCard({
 }
 
 export default function HomePage() {
-  const { currentUser, activeSprint } = usePortal();
+  const { profile, selectedTeam, activeSprint } = usePortal();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus[]>([]);
   const [recentHighFives, setRecentHighFives] = useState<HighFive[]>([]);
@@ -272,16 +272,19 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (activeSprint) {
-      fetchDashboardData();
-    }
-  }, [activeSprint, currentUser]);
+    fetchDashboardData();
+  }, [activeSprint, profile, selectedTeam]);
 
   const fetchDashboardData = async () => {
+    setLoading(true);
     try {
+      // Fetch stats - using sprint if available
+      const sprintParam = activeSprint?.id ? `?sprintId=${activeSprint.id}` : '';
+      const teamParam = selectedTeam?.id ? `${sprintParam ? '&' : '?'}teamId=${selectedTeam.id}` : '';
+
       const [statsRes, statusRes, highFivesRes] = await Promise.all([
-        fetch(`/api/internal/dashboard/stats?sprintId=${activeSprint?.id}`),
-        fetch(`/api/internal/dashboard/status?sprintId=${activeSprint?.id}`),
+        fetch(`/api/internal/dashboard/stats${sprintParam}${teamParam}`),
+        fetch(`/api/internal/dashboard/status${sprintParam}${teamParam}`),
         fetch('/api/internal/high-fives?limit=5'),
       ]);
 
@@ -289,9 +292,10 @@ export default function HomePage() {
       if (statusRes.ok) setSubmissionStatus(await statusRes.json());
       if (highFivesRes.ok) setRecentHighFives(await highFivesRes.json());
 
-      if (currentUser && activeSprint) {
+      // Fetch coffee chat for current user
+      if (profile && activeSprint) {
         const coffeeChatRes = await fetch(
-          `/api/internal/coffee-chats?internId=${currentUser.id}&sprintId=${activeSprint.id}`
+          `/api/internal/coffee-chats?profileId=${profile.id}&sprintId=${activeSprint.id}`
         );
         if (coffeeChatRes.ok) {
           const coffeeChats = await coffeeChatRes.json();
@@ -367,11 +371,11 @@ export default function HomePage() {
             animate={{ opacity: 1, x: 0 }}
             className="text-3xl font-bold text-white tracking-tight"
           >
-            Welcome{currentUser && (
+            Welcome{profile && (
               <>
                 {', '}
                 <span className="text-brand-green">
-                  {currentUser.name.split(' ')[0]}
+                  {profile.full_name.split(' ')[0]}
                 </span>
               </>
             )}
@@ -380,13 +384,31 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="flex items-center gap-3 mt-2"
+            className="flex flex-wrap items-center gap-2 mt-2"
           >
+            {selectedTeam && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-brand-yellow/10 text-brand-yellow text-xs font-medium rounded-full border border-brand-yellow/20">
+                {selectedTeam.name}
+              </span>
+            )}
             <span className="text-white/50">{activeSprint?.name || 'No active sprint'}</span>
             {daysLeft !== null && daysLeft > 0 && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-brand-green/10 text-brand-green text-xs font-medium rounded-full border border-brand-green/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse" />
-                {daysLeft} days left
+              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border ${
+                daysLeft <= 2
+                  ? 'bg-red-500/10 text-red-400 border-red-500/20'
+                  : daysLeft <= 5
+                    ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                    : 'bg-brand-green/10 text-brand-green border-brand-green/20'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+                  daysLeft <= 2 ? 'bg-red-400' : daysLeft <= 5 ? 'bg-amber-400' : 'bg-brand-green'
+                }`} />
+                {daysLeft} day{daysLeft !== 1 ? 's' : ''} left
+              </span>
+            )}
+            {daysLeft !== null && daysLeft <= 0 && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-500/10 text-red-400 text-xs font-medium rounded-full border border-red-500/20">
+                Sprint ended
               </span>
             )}
           </motion.div>
@@ -566,20 +588,20 @@ export default function HomePage() {
                 <p className="text-white/40 text-xs mb-3">You&apos;re paired with</p>
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-green/20 to-brand-yellow/10 flex items-center justify-center text-brand-green font-semibold text-xl">
-                    {(myCoffeeChat.intern_1_name === currentUser?.name
+                    {(myCoffeeChat.intern_1_name === profile?.full_name
                       ? myCoffeeChat.intern_2_name
                       : myCoffeeChat.intern_1_name
                     ).charAt(0)}
                   </div>
                   <div>
                     <p className="text-white font-medium text-lg">
-                      {myCoffeeChat.intern_1_name === currentUser?.name
+                      {myCoffeeChat.intern_1_name === profile?.full_name
                         ? myCoffeeChat.intern_2_name
                         : myCoffeeChat.intern_1_name}
                     </p>
                     <p className="text-white/40 text-sm flex items-center gap-1.5">
                       {Icons.mapPin}
-                      {myCoffeeChat.intern_1_name === currentUser?.name
+                      {myCoffeeChat.intern_1_name === profile?.full_name
                         ? myCoffeeChat.intern_2_location
                         : myCoffeeChat.intern_1_location}
                     </p>
@@ -624,7 +646,7 @@ export default function HomePage() {
                 {Icons.coffee}
               </div>
               <p className="text-white/40 mb-4">No coffee chat assigned yet</p>
-              {currentUser?.role === 'admin' && (
+              {profile?.role === 'admin' && (
                 <Link
                   href="/internal/admin"
                   className="inline-flex items-center gap-2 text-brand-green text-sm hover:underline"

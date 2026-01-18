@@ -110,21 +110,21 @@ function StatCard({
 }
 
 export default function MyProgressPage() {
-  const { currentUser } = usePortal();
+  const { profile } = usePortal();
   const [progress, setProgress] = useState<InternProgress | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (currentUser) {
+    if (profile) {
       fetchProgress();
     } else {
       setLoading(false);
     }
-  }, [currentUser]);
+  }, [profile]);
 
   const fetchProgress = async () => {
     try {
-      const response = await fetch(`/api/internal/me?internId=${currentUser?.id}`);
+      const response = await fetch(`/api/internal/me?profileId=${profile?.id}`);
       if (response.ok) {
         const data = await response.json();
         setProgress(data);
@@ -154,7 +154,7 @@ export default function MyProgressPage() {
     return `${diffDays}d ago`;
   };
 
-  if (!currentUser) {
+  if (!profile) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -171,9 +171,9 @@ export default function MyProgressPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </motion.div>
-        <h2 className="text-2xl font-semibold text-white mb-3">Select Your Profile</h2>
+        <h2 className="text-2xl font-semibold text-white mb-3">Loading Profile...</h2>
         <p className="text-text-muted/70 text-center max-w-md leading-relaxed">
-          Please select yourself from the dropdown in the sidebar to view your progress and stats.
+          Please wait while we load your profile data.
         </p>
       </motion.div>
     );
@@ -217,7 +217,7 @@ export default function MyProgressPage() {
           transition={{ type: 'spring', stiffness: 200 }}
           className="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-green/30 to-brand-yellow/30 flex items-center justify-center text-brand-green font-bold text-3xl ring-4 ring-brand-green/20"
         >
-          {currentUser.name.charAt(0).toUpperCase()}
+          {profile.full_name.charAt(0).toUpperCase()}
         </motion.div>
         <div>
           <motion.h1
@@ -233,7 +233,7 @@ export default function MyProgressPage() {
             transition={{ delay: 0.2 }}
             className="text-text-muted/70 mt-1 flex items-center gap-2"
           >
-            {currentUser.name}
+            {profile.full_name}
             {progress?.intern.location && (
               <>
                 <span className="w-1 h-1 rounded-full bg-text-muted/40" />

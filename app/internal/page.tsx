@@ -1,136 +1,150 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+import { createClient } from '@/lib/supabase/client';
 
 export default function InternalLoginPage() {
-  const [code, setCode] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [error, setError] = useState('');
+  const searchParams = useSearchParams();
+  const supabase = createClient();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  // Check for error from callback
+  const callbackError = searchParams.get('error');
+
+  const handleGoogleLogin = async () => {
     setLoading(true);
+    setError('');
 
     try {
-      const response = await fetch('/api/internal/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
       });
 
-      if (response.ok) {
-        router.push('/internal/home');
-      } else {
-        const data = await response.json();
-        setError(data.error || 'Invalid access code');
+      if (error) {
+        setError(error.message);
+        setLoading(false);
       }
     } catch (err) {
-      setError('Something went wrong. Please try again.');
-    } finally {
+      setError('An unexpected error occurred');
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-dark-pure flex flex-col items-center justify-center p-4">
-      {/* Background gradient effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-dark-pure via-dark-lighter to-dark-pure opacity-50" />
-      
-      {/* Subtle grid pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(106,198,112,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(106,198,112,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
-      
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-4">
+      {/* Background effects */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-[800px] h-[800px] bg-brand-green/[0.03] rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-brand-yellow/[0.02] rounded-full blur-[100px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:72px_72px]" />
+      </div>
+
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <Image
             src="/MLV Logo (white).png"
             alt="MLV Logo"
-            width={120}
-            height={48}
+            width={140}
+            height={56}
             className="object-contain"
+            priority
           />
         </div>
 
         {/* Login Card */}
-        <div className="bg-dark-card/80 backdrop-blur-sm border border-brand-green/20 rounded-2xl p-8 shadow-card">
+        <div className="bg-[#0d0d0d]/95 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-8 shadow-2xl">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-light-DEFAULT mb-2">
-              Intern Portal
+            <h1 className="text-2xl font-bold text-white mb-2">
+              Welcome to the Portal
             </h1>
-            <p className="text-text-muted text-sm">
-              Enter your access code to continue
+            <p className="text-white/40 text-sm">
+              Sign in with your MLV Google account to continue
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label 
-                htmlFor="code" 
-                className="block text-sm font-medium text-text-light mb-2"
-              >
-                Access Code
-              </label>
-              <input
-                id="code"
-                type="password"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Enter access code"
-                className="w-full px-4 py-3 bg-dark-pure/50 border border-brand-green/30 rounded-xl 
-                         text-light-DEFAULT placeholder-text-muted
-                         focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/50
-                         transition-all duration-200"
-                required
-              />
+          {(error || callbackError) && (
+            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 rounded-xl">
+              <p className="text-red-400 text-sm text-center">
+                {error || 'Authentication failed. Please try again.'}
+              </p>
             </div>
+          )}
 
-            {error && (
-              <div className="p-3 bg-accent-coral/10 border border-accent-coral/30 rounded-lg">
-                <p className="text-accent-coral text-sm text-center">{error}</p>
-              </div>
+          <button
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            className="w-full py-3.5 px-4 bg-white hover:bg-gray-100
+                     text-gray-800 font-medium rounded-xl
+                     disabled:opacity-50 disabled:cursor-not-allowed
+                     transition-all duration-200 transform hover:scale-[1.01]
+                     flex items-center justify-center gap-3 shadow-lg"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5 text-gray-600" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                Connecting...
+              </span>
+            ) : (
+              <>
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  />
+                </svg>
+                Continue with Google
+              </>
             )}
+          </button>
 
-            <button
-              type="submit"
-              disabled={loading || !code}
-              className="w-full py-3 px-4 bg-brand-green hover:bg-primary-dark 
-                       text-dark-pure font-semibold rounded-xl
-                       disabled:opacity-50 disabled:cursor-not-allowed
-                       transition-all duration-200 transform hover:scale-[1.02]
-                       shadow-glow-green hover:shadow-glow-lg"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle 
-                      className="opacity-25" 
-                      cx="12" cy="12" r="10" 
-                      stroke="currentColor" 
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path 
-                      className="opacity-75" 
-                      fill="currentColor" 
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Verifying...
-                </span>
-              ) : (
-                'Enter Portal'
-              )}
-            </button>
-          </form>
+          <div className="mt-6 text-center">
+            <p className="text-white/30 text-xs">
+              By signing in, you agree to our Terms of Service and Privacy Policy
+            </p>
+          </div>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-text-muted text-xs mt-6">
-          MLV PM Intern Tracker • 2026
+        <p className="text-center text-white/30 text-xs mt-6">
+          MLV Intern Portal &bull; 2026
         </p>
       </div>
     </div>

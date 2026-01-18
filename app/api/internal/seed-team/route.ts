@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
-import { neon } from '@neondatabase/serverless';
+import { neon, NeonQueryFunction } from '@neondatabase/serverless';
 
-const sql = neon(process.env.POSTGRES_URL!);
+// Defer neon initialization to runtime
+const getSql = (): NeonQueryFunction<false, false> => {
+  if (!process.env.POSTGRES_URL) {
+    throw new Error('POSTGRES_URL environment variable is not set');
+  }
+  return neon(process.env.POSTGRES_URL);
+};
 
 // Shared seed function
 async function seedTeam(key: string | null) {
@@ -10,6 +16,7 @@ async function seedTeam(key: string | null) {
   }
 
   try {
+    const sql = getSql();
     // Clear existing interns
     await sql`DELETE FROM interns`;
 
