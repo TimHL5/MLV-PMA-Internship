@@ -1,9 +1,9 @@
 import { neon } from '@neondatabase/serverless';
 import type {
   Intern,
-  Sprint,
-  Submission,
-  HighFive,
+  LegacySprint as Sprint,
+  LegacySubmission as Submission,
+  LegacyHighFive as HighFive,
   HighFiveCategory,
   OneOnOne,
   CoffeeChat,
@@ -12,10 +12,39 @@ import type {
   TaskStatus,
   TaskPriority,
   TaskComment,
-  DashboardStats,
-  SubmissionStatus,
-  InternProgress,
 } from './types';
+
+// Legacy dashboard types for Neon-based internal routes
+interface DashboardStats {
+  totalInterns: number;
+  submittedThisSprint: number;
+  missingSubmissions: number;
+  totalSubmissions: number;
+  highFivesGiven: number;
+  tasksCompleted: number;
+  averageMood: number | null;
+}
+
+interface SubmissionStatus {
+  intern: Intern;
+  hasSubmitted: boolean;
+  submittedAt: Date | null;
+}
+
+interface InternProgress {
+  intern: Intern;
+  totalSubmissions: number;
+  currentStreak: number;
+  highFivesReceived: number;
+  averageMood: number | null;
+  tasksCompleted: number;
+  submissionHistory: {
+    sprint: Sprint;
+    submitted: boolean;
+    submittedAt: Date | null;
+  }[];
+  recentHighFives: HighFive[];
+}
 
 // Re-export types for convenience
 export type {
@@ -37,7 +66,18 @@ export type {
 };
 
 // Create a SQL query function using the connection string from environment
-export const sql = neon(process.env.POSTGRES_URL!);
+const rawSql = process.env.POSTGRES_URL
+  ? neon(process.env.POSTGRES_URL)
+  : null;
+
+// Wrapper to ensure results are always an array
+type SqlValues = string | number | boolean | null | undefined | Date;
+// eslint-disable-next-line
+export const sql = async (strings: TemplateStringsArray, ...values: SqlValues[]): Promise<any[]> => {
+  if (!rawSql) return [];
+  const result = await rawSql(strings, ...values);
+  return result as unknown[];
+};
 
 // ==========================================
 // INTERNS
@@ -579,7 +619,7 @@ export async function generateCoffeeChatPairings(sprintId: number): Promise<Coff
   `;
 
   const recentPairs = new Set(
-    (recentPairings as { intern_1_id: number; intern_2_id: number }[]).map(p =>
+    (recentPairings as { intern_1_id: number; intern_2_id: number }[]).map((p) =>
       `${Math.min(p.intern_1_id, p.intern_2_id)}-${Math.max(p.intern_1_id, p.intern_2_id)}`
     )
   );

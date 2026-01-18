@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { Providers } from '@/components/providers'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://internships.mlvignite.com'),
@@ -86,7 +87,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className="bg-dark text-white antialiased">
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   )

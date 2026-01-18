@@ -1,8 +1,262 @@
 // ==========================================
-// MLV Intern Portal - Type Definitions
+// MLV Intern Portal - Type Definitions (Supabase)
 // ==========================================
 
-// Core Tables
+// Database types for Supabase tables
+
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url?: string;
+  created_at: string;
+}
+
+export interface Team {
+  id: string;
+  organization_id: string;
+  name: string;
+  slug: string;
+  created_at: string;
+}
+
+export interface Profile {
+  id: string;
+  email: string;
+  full_name: string;
+  avatar_url?: string;
+  role: 'intern' | 'manager' | 'admin';
+  timezone?: string;
+  location?: string;
+  linkedin_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TeamMember {
+  id: string;
+  team_id: string;
+  profile_id: string;
+  role: 'member' | 'lead' | 'admin';
+  joined_at: string;
+  profile?: Profile;
+}
+
+export interface Sprint {
+  id: string;
+  team_id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface Submission {
+  id: string;
+  sprint_id: string;
+  profile_id: string;
+  goals: string;
+  deliverables: string;
+  blockers?: string;
+  reflection?: string;
+  mood?: 'great' | 'good' | 'okay' | 'struggling';
+  hours_worked?: number;
+  created_at: string;
+  updated_at: string;
+  profile?: Profile;
+  sprint?: Sprint;
+}
+
+export type HighFiveCategory = 'teamwork' | 'creativity' | 'hustle' | 'problem-solving' | 'communication';
+
+export interface HighFive {
+  id: string;
+  team_id: string;
+  from_profile_id: string;
+  to_profile_id: string;
+  message: string;
+  category?: HighFiveCategory;
+  sprint_id?: string;
+  created_at: string;
+  from_profile?: Profile;
+  to_profile?: Profile;
+}
+
+export interface OneOnOneNote {
+  id: string;
+  team_id: string;
+  profile_id: string;
+  sprint_id?: string;
+  wins: string;
+  challenges: string;
+  discussion_topics: string;
+  action_items?: string;
+  manager_notes?: string;
+  is_private: boolean;
+  created_at: string;
+  updated_at: string;
+  profile?: Profile;
+  sprint?: Sprint;
+}
+
+export interface KanbanColumn {
+  id: string;
+  team_id: string;
+  name: string;
+  position: number;
+  color?: string;
+  created_at: string;
+}
+
+export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export interface KanbanTask {
+  id: string;
+  column_id: string;
+  team_id: string;
+  title: string;
+  description?: string;
+  assignee_id?: string;
+  due_date?: string;
+  priority?: TaskPriority;
+  labels?: string[];
+  position: number;
+  created_at: string;
+  updated_at: string;
+  assignee?: Profile;
+  column?: KanbanColumn;
+}
+
+export type CoffeeChatStatus = 'pending' | 'scheduled' | 'completed' | 'skipped';
+
+export interface CoffeeChat {
+  id: string;
+  team_id: string;
+  profile1_id: string;
+  profile2_id: string;
+  status: CoffeeChatStatus;
+  scheduled_for?: string;
+  completed_at?: string;
+  notes?: string;
+  created_at: string;
+  profile1?: Profile;
+  profile2?: Profile;
+}
+
+// Context types
+export interface AuthContextType {
+  user: Profile | null;
+  loading: boolean;
+  signOut: () => Promise<void>;
+}
+
+export interface TeamContextType {
+  organization: Organization | null;
+  team: Team | null;
+  members: TeamMember[];
+  currentSprint: Sprint | null;
+  sprints: Sprint[];
+  loading: boolean;
+  refetch: () => Promise<void>;
+}
+
+// Dashboard & Stats
+export interface DashboardStats {
+  totalMembers: number;
+  submittedThisSprint: number;
+  missingSubmissions: number;
+  totalSubmissions: number;
+  highFivesGiven: number;
+  tasksCompleted: number;
+  averageMood: number | null;
+}
+
+export interface SubmissionStatus {
+  profile: Profile;
+  hasSubmitted: boolean;
+  submittedAt: string | null;
+}
+
+export interface MemberProgress {
+  profile: Profile;
+  totalSubmissions: number;
+  currentStreak: number;
+  highFivesReceived: number;
+  averageMood: number | null;
+  tasksCompleted: number;
+  submissionHistory: {
+    sprint: Sprint;
+    submitted: boolean;
+    submittedAt: string | null;
+  }[];
+  recentHighFives: HighFive[];
+}
+
+// API Request/Response types
+export interface ApiResponse<T> {
+  data?: T;
+  error?: string;
+}
+
+export interface CreateHighFiveRequest {
+  toProfileId: string;
+  message: string;
+  category?: HighFiveCategory;
+  sprintId?: string;
+}
+
+export interface CreateSubmissionRequest {
+  sprintId: string;
+  goals: string;
+  deliverables: string;
+  blockers?: string;
+  reflection?: string;
+  mood?: string;
+  hoursWorked?: number;
+}
+
+export interface CreateTaskRequest {
+  columnId: string;
+  title: string;
+  description?: string;
+  priority?: TaskPriority;
+  assigneeId?: string;
+  dueDate?: string;
+  labels?: string[];
+}
+
+export interface UpdateTaskRequest {
+  title?: string;
+  description?: string;
+  columnId?: string;
+  priority?: TaskPriority;
+  assigneeId?: string | null;
+  dueDate?: string | null;
+  labels?: string[];
+  position?: number;
+}
+
+export interface CreateOneOnOneRequest {
+  sprintId?: string;
+  wins: string;
+  challenges: string;
+  discussionTopics: string;
+  actionItems?: string;
+}
+
+export interface UpdateOneOnOneRequest {
+  wins?: string;
+  challenges?: string;
+  discussionTopics?: string;
+  actionItems?: string;
+  managerNotes?: string;
+}
+
+// ==========================================
+// Legacy Types (for /internal routes with Neon)
+// ==========================================
+
 export interface Intern {
   id: number;
   name: string;
@@ -15,7 +269,7 @@ export interface Intern {
   updated_at: Date;
 }
 
-export interface Sprint {
+export interface LegacySprint {
   id: number;
   name: string;
   description: string | null;
@@ -25,7 +279,7 @@ export interface Sprint {
   created_at: Date;
 }
 
-export interface Submission {
+export interface LegacySubmission {
   id: number;
   intern_id: number;
   sprint_id: number;
@@ -37,15 +291,11 @@ export interface Submission {
   hours_worked: number | null;
   submitted_at: Date;
   updated_at: Date;
-  // Joined fields
   intern_name?: string;
   sprint_name?: string;
 }
 
-// Feature 1: Peer Recognition
-export type HighFiveCategory = 'teamwork' | 'creativity' | 'hustle' | 'problem-solving' | 'communication';
-
-export interface HighFive {
+export interface LegacyHighFive {
   id: number;
   from_intern_id: number;
   to_intern_id: number;
@@ -53,63 +303,32 @@ export interface HighFive {
   category: HighFiveCategory | null;
   sprint_id: number | null;
   created_at: Date;
-  // Joined fields
   from_intern_name?: string;
   from_intern_avatar?: string | null;
   to_intern_name?: string;
   to_intern_avatar?: string | null;
 }
 
-// Feature 3: 1:1 Prep & Notes
 export interface OneOnOne {
   id: number;
   intern_id: number;
   sprint_id: number | null;
   scheduled_at: Date | null;
-  // Intern prep
   proud_of: string | null;
   need_help: string | null;
   questions: string | null;
   prep_submitted_at: Date | null;
-  // Admin notes (private)
   admin_notes: string | null;
   action_items: string | null;
   meeting_completed_at: Date | null;
   created_at: Date;
   updated_at: Date;
-  // Joined fields
   intern_name?: string;
   intern_avatar?: string | null;
   sprint_name?: string;
 }
 
-// Feature 5: Coffee Chat Matching
-export type CoffeeChatStatus = 'pending' | 'completed' | 'skipped';
-
-export interface CoffeeChat {
-  id: number;
-  intern_1_id: number;
-  intern_2_id: number;
-  sprint_id: number | null;
-  status: CoffeeChatStatus;
-  completed_at: Date | null;
-  notes: string | null;
-  created_at: Date;
-  // Joined fields
-  intern_1_name?: string;
-  intern_1_avatar?: string | null;
-  intern_1_location?: string | null;
-  intern_1_timezone?: string | null;
-  intern_2_name?: string;
-  intern_2_avatar?: string | null;
-  intern_2_location?: string | null;
-  intern_2_timezone?: string | null;
-  sprint_name?: string;
-}
-
-// Feature 6: Sprint Project Board
 export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done';
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export interface Task {
   id: number;
@@ -127,7 +346,6 @@ export interface Task {
   parent_task_id: number | null;
   created_at: Date;
   updated_at: Date;
-  // Joined fields
   assignee_name?: string;
   assignee_avatar?: string | null;
   created_by_name?: string;
@@ -142,82 +360,6 @@ export interface TaskComment {
   intern_id: number;
   content: string;
   created_at: Date;
-  // Joined fields
   intern_name?: string;
   intern_avatar?: string | null;
-}
-
-// Dashboard & Stats
-export interface DashboardStats {
-  totalInterns: number;
-  submittedThisSprint: number;
-  missingSubmissions: number;
-  totalSubmissions: number;
-  highFivesGiven: number;
-  tasksCompleted: number;
-  averageMood: number | null;
-}
-
-export interface SubmissionStatus {
-  intern: Intern;
-  hasSubmitted: boolean;
-  submittedAt: Date | null;
-}
-
-export interface InternProgress {
-  intern: Intern;
-  totalSubmissions: number;
-  currentStreak: number;
-  highFivesReceived: number;
-  averageMood: number | null;
-  tasksCompleted: number;
-  submissionHistory: {
-    sprint: Sprint;
-    submitted: boolean;
-    submittedAt: Date | null;
-  }[];
-  recentHighFives: HighFive[];
-}
-
-// API Request/Response types
-export interface CreateHighFiveRequest {
-  toInternId: number;
-  message: string;
-  category?: HighFiveCategory;
-  sprintId?: number;
-}
-
-export interface UpdateTaskRequest {
-  title?: string;
-  description?: string;
-  status?: TaskStatus;
-  priority?: TaskPriority;
-  assigneeId?: number | null;
-  dueDate?: string | null;
-  estimatedHours?: number | null;
-  actualHours?: number | null;
-  position?: number;
-}
-
-export interface CreateTaskRequest {
-  sprintId: number;
-  title: string;
-  description?: string;
-  priority?: TaskPriority;
-  assigneeId?: number;
-  dueDate?: string;
-  estimatedHours?: number;
-  parentTaskId?: number;
-}
-
-export interface SubmitOneOnOnePrepRequest {
-  proudOf?: string;
-  needHelp?: string;
-  questions?: string;
-}
-
-export interface AddAdminNotesRequest {
-  adminNotes?: string;
-  actionItems?: string;
-  completed?: boolean;
 }
