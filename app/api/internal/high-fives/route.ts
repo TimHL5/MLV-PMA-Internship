@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/auth';
-import { getHighFives, createHighFive } from '@/lib/db';
+import { isAuthenticated, getCurrentUserId } from '@/lib/supabase/auth';
+import { getHighFives, createHighFive } from '@/lib/supabase/database';
 
 export async function GET(request: NextRequest) {
   if (!(await isAuthenticated())) {
@@ -9,15 +9,17 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const toInternId = searchParams.get('toInternId');
-    const fromInternId = searchParams.get('fromInternId');
+    const teamId = searchParams.get('teamId');
+    const toProfileId = searchParams.get('toProfileId');
+    const fromProfileId = searchParams.get('fromProfileId');
     const sprintId = searchParams.get('sprintId');
     const limit = searchParams.get('limit');
 
     const highFives = await getHighFives({
-      toInternId: toInternId ? parseInt(toInternId) : undefined,
-      fromInternId: fromInternId ? parseInt(fromInternId) : undefined,
-      sprintId: sprintId ? parseInt(sprintId) : undefined,
+      teamId: teamId || undefined,
+      toProfileId: toProfileId || undefined,
+      fromProfileId: fromProfileId || undefined,
+      sprintId: sprintId || undefined,
       limit: limit ? parseInt(limit) : undefined,
     });
 
@@ -34,20 +36,26 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json();
-    const { fromInternId, toInternId, message, category, sprintId } = body;
+    const currentUserId = await getCurrentUserId();
+    if (!currentUserId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    if (!fromInternId || !toInternId || !message) {
+    const body = await request.json();
+    const { teamId, toProfileId, message, category, sprintId } = body;
+
+    if (!teamId || !toProfileId || !message) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    if (fromInternId === toInternId) {
+    if (currentUserId === toProfileId) {
       return NextResponse.json({ error: 'Cannot give high five to yourself' }, { status: 400 });
     }
 
     const highFive = await createHighFive({
-      fromInternId,
-      toInternId,
+      teamId,
+      fromProfileId: currentUserId,
+      toProfileId,
       message,
       category,
       sprintId,

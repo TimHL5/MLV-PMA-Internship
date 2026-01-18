@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/auth';
-import { getTasks, createTask, TaskStatus } from '@/lib/db';
+import { isAuthenticated } from '@/lib/supabase/auth';
+import { getKanbanTasks, createKanbanTask } from '@/lib/supabase/database';
 
 export async function GET(request: NextRequest) {
   if (!(await isAuthenticated())) {
@@ -9,14 +9,14 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const sprintId = searchParams.get('sprintId');
+    const teamId = searchParams.get('teamId');
+    const columnId = searchParams.get('columnId');
     const assigneeId = searchParams.get('assigneeId');
-    const status = searchParams.get('status') as TaskStatus | null;
 
-    const tasks = await getTasks({
-      sprintId: sprintId ? parseInt(sprintId) : undefined,
-      assigneeId: assigneeId ? parseInt(assigneeId) : undefined,
-      status: status || undefined,
+    const tasks = await getKanbanTasks({
+      teamId: teamId || undefined,
+      columnId: columnId || undefined,
+      assigneeId: assigneeId || undefined,
     });
 
     return NextResponse.json(tasks);
@@ -33,22 +33,21 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { sprintId, title, description, priority, assigneeId, createdById, dueDate, estimatedHours, parentTaskId } = body;
+    const { teamId, columnId, title, description, priority, assigneeId, dueDate, labels } = body;
 
-    if (!sprintId || !title) {
-      return NextResponse.json({ error: 'Sprint ID and title are required' }, { status: 400 });
+    if (!teamId || !columnId || !title) {
+      return NextResponse.json({ error: 'Team ID, Column ID, and title are required' }, { status: 400 });
     }
 
-    const task = await createTask({
-      sprintId,
+    const task = await createKanbanTask({
+      teamId,
+      columnId,
       title,
       description,
       priority,
       assigneeId,
-      createdById,
       dueDate,
-      estimatedHours,
-      parentTaskId,
+      labels,
     });
 
     return NextResponse.json(task);

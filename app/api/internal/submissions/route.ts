@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSubmissions, createSubmission, getSubmissionStats } from '@/lib/db';
-import { isAuthenticated } from '@/lib/auth';
+import { isAuthenticated, getCurrentUserId } from '@/lib/supabase/auth';
+import { getSubmissions, createSubmission, getDashboardStats } from '@/lib/supabase/database';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,18 +10,18 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const internId = searchParams.get('internId');
+    const profileId = searchParams.get('profileId');
     const sprintId = searchParams.get('sprintId');
+    const teamId = searchParams.get('teamId');
     const includeStats = searchParams.get('stats') === 'true';
 
-    const filters: { internId?: number; sprintId?: number } = {};
-    if (internId) filters.internId = parseInt(internId);
-    if (sprintId) filters.sprintId = parseInt(sprintId);
+    const submissions = await getSubmissions({
+      profileId: profileId || undefined,
+      sprintId: sprintId || undefined,
+    });
 
-    const submissions = await getSubmissions(filters);
-    
-    if (includeStats) {
-      const stats = await getSubmissionStats(filters.sprintId);
+    if (includeStats && teamId) {
+      const stats = await getDashboardStats(teamId, sprintId || undefined);
       return NextResponse.json({ submissions, stats });
     }
 
@@ -42,12 +42,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { internId, sprintId, goals, deliverables, blockers, reflection, mood, hoursWorked } = await request.json();
+    const currentUserId = await getCurrentUserId();
+    if (!currentUserId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { sprintId, goals, deliverables, blockers, reflection, mood, hoursWorked } = await request.json();
 
     // Validation
-    if (!internId || !sprintId) {
+    if (!sprintId) {
       return NextResponse.json(
-        { error: 'Intern and Sprint selection are required' },
+        { error: 'Sprint selection is required' },
         { status: 400 }
       );
     }
@@ -67,7 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
     const submission = await createSubmission({
-      internId,
+      profileId: currentUserId,
       sprintId,
       goals: goals.trim(),
       deliverables: deliverables.trim(),

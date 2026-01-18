@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/auth';
-import { getSubmissionStats } from '@/lib/db';
+import { isAuthenticated } from '@/lib/supabase/auth';
+import { getDashboardStats } from '@/lib/supabase/database';
 
 export async function GET(request: NextRequest) {
   if (!(await isAuthenticated())) {
@@ -9,9 +9,14 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
+    const teamId = searchParams.get('teamId');
     const sprintId = searchParams.get('sprintId');
 
-    const stats = await getSubmissionStats(sprintId ? parseInt(sprintId) : undefined);
+    if (!teamId) {
+      return NextResponse.json({ error: 'Team ID required' }, { status: 400 });
+    }
+
+    const stats = await getDashboardStats(teamId, sprintId || undefined);
     return NextResponse.json(stats);
   } catch (error) {
     console.error('Error fetching stats:', error);

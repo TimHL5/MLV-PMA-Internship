@@ -1,48 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getInterns, createIntern } from '@/lib/db';
-import { isAuthenticated } from '@/lib/auth';
+import { isAuthenticated } from '@/lib/supabase/auth';
+import { getTeamMembers, getProfiles } from '@/lib/supabase/database';
 
-export async function GET() {
-  try {
-    const authenticated = await isAuthenticated();
-    if (!authenticated) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const interns = await getInterns();
-    return NextResponse.json(interns);
-  } catch (error) {
-    console.error('Error fetching interns:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch interns' },
-      { status: 500 }
-    );
+// This route now returns team members or all profiles
+export async function GET(request: NextRequest) {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-}
 
-export async function POST(request: NextRequest) {
   try {
-    const authenticated = await isAuthenticated();
-    if (!authenticated) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { searchParams } = new URL(request.url);
+    const teamId = searchParams.get('teamId');
+
+    if (teamId) {
+      // Return team members with their profiles
+      const members = await getTeamMembers(teamId);
+      // Map to a format compatible with old intern structure
+      const profiles = members.map(m => ({
+        id: m.profile_id,
+        ...m.profile,
+        team_role: m.role,
+      }));
+      return NextResponse.json(profiles);
     }
 
-    const { name, email, location, timezone, role } = await request.json();
-
-    if (!name) {
-      return NextResponse.json(
-        { error: 'Name is required' },
-        { status: 400 }
-      );
-    }
-
-    const intern = await createIntern(name, email, location, timezone, role);
-    return NextResponse.json(intern, { status: 201 });
+    // Return all profiles (admin use case)
+    const profiles = await getProfiles();
+    return NextResponse.json(profiles);
   } catch (error) {
-    console.error('Error creating intern:', error);
-    return NextResponse.json(
-      { error: 'Failed to create intern' },
-      { status: 500 }
-    );
+    console.error('Error fetching members/profiles:', error);
+    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
   }
 }

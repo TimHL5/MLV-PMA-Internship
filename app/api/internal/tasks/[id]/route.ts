@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/auth';
-import { getTaskById, updateTask, deleteTask, updateTaskStatus } from '@/lib/db';
+import { isAuthenticated } from '@/lib/supabase/auth';
+import { getKanbanTaskById, updateKanbanTask, deleteKanbanTask, moveKanbanTask } from '@/lib/supabase/database';
 
 export async function GET(
   request: NextRequest,
@@ -12,7 +12,7 @@ export async function GET(
 
   try {
     const { id } = await params;
-    const task = await getTaskById(parseInt(id));
+    const task = await getKanbanTaskById(id);
 
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
@@ -37,22 +37,21 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    // Quick status update
-    if (body.status && Object.keys(body).length === 1) {
-      const task = await updateTaskStatus(parseInt(id), body.status);
+    // Handle move operation (column change with position)
+    if (body.columnId !== undefined && body.position !== undefined) {
+      const task = await moveKanbanTask(id, body.columnId, body.position);
       return NextResponse.json(task);
     }
 
-    // Full update
-    const task = await updateTask(parseInt(id), {
+    // Standard update
+    const task = await updateKanbanTask(id, {
       title: body.title,
       description: body.description,
-      status: body.status,
+      column_id: body.columnId,
       priority: body.priority,
       assignee_id: body.assigneeId,
       due_date: body.dueDate,
-      estimated_hours: body.estimatedHours,
-      actual_hours: body.actualHours,
+      labels: body.labels,
       position: body.position,
     });
 
@@ -73,7 +72,7 @@ export async function DELETE(
 
   try {
     const { id } = await params;
-    await deleteTask(parseInt(id));
+    await deleteKanbanTask(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting task:', error);

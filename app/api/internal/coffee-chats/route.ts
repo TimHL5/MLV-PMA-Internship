@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/auth';
-import { getCoffeeChats, generateCoffeeChatPairings } from '@/lib/db';
+import { isAuthenticated } from '@/lib/supabase/auth';
+import { getCoffeeChats, generateCoffeeChatPairings } from '@/lib/supabase/database';
 
 export async function GET(request: NextRequest) {
   if (!(await isAuthenticated())) {
@@ -9,12 +9,12 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const internId = searchParams.get('internId');
-    const sprintId = searchParams.get('sprintId');
+    const teamId = searchParams.get('teamId');
+    const profileId = searchParams.get('profileId');
 
     const coffeeChats = await getCoffeeChats({
-      internId: internId ? parseInt(internId) : undefined,
-      sprintId: sprintId ? parseInt(sprintId) : undefined,
+      teamId: teamId || undefined,
+      profileId: profileId || undefined,
     });
 
     return NextResponse.json(coffeeChats);
@@ -31,14 +31,14 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { sprintId, action } = body;
+    const { teamId, action } = body;
 
     if (action === 'generate') {
-      if (!sprintId) {
-        return NextResponse.json({ error: 'Sprint ID required' }, { status: 400 });
+      if (!teamId) {
+        return NextResponse.json({ error: 'Team ID required' }, { status: 400 });
       }
 
-      const pairings = await generateCoffeeChatPairings(sprintId);
+      const pairings = await generateCoffeeChatPairings(teamId);
       return NextResponse.json(pairings);
     }
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/auth';
-import { updateCoffeeChatStatus } from '@/lib/db';
+import { isAuthenticated } from '@/lib/supabase/auth';
+import { updateCoffeeChatStatus } from '@/lib/supabase/database';
 
 export async function PATCH(
   request: NextRequest,
@@ -15,11 +15,11 @@ export async function PATCH(
     const body = await request.json();
     const { status, notes } = body;
 
-    if (!status || !['pending', 'completed', 'skipped'].includes(status)) {
+    if (!status || !['pending', 'scheduled', 'completed', 'skipped'].includes(status)) {
       return NextResponse.json({ error: 'Valid status required' }, { status: 400 });
     }
 
-    const coffeeChat = await updateCoffeeChatStatus(parseInt(id), status, notes);
+    const coffeeChat = await updateCoffeeChatStatus(id, status, notes);
     return NextResponse.json(coffeeChat);
   } catch (error) {
     console.error('Error updating coffee chat:', error);
