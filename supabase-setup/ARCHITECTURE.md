@@ -113,7 +113,7 @@ User Signs In
 │  • Add/remove members                                           │
 │                                                                  │
 │  MEMBER ─────────────────────────────────────────────────────▶  │
-│  (Tina, Vanessa, Kim, Linh, Tiffany)                           │
+│  (Tina, Vanessa, Kim, Linh)                                    │
 │  • Submit updates                                               │
 │  • View team submissions                                        │
 │  • Give high fives                                              │
