@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAuthenticated } from '@/lib/auth';
-import { updateCoffeeChatStatus } from '@/lib/db';
+import { updateCoffeeChatStatus } from '@/lib/legacy/db';
 
 export async function PATCH(
   request: NextRequest,

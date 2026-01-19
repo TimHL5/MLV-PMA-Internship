@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSubmissions, createSubmission, getSubmissionStats } from '@/lib/db';
+import { getSubmissions, createSubmission, getSubmissionStats } from '@/lib/legacy/db';
 import { isAuthenticated } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {

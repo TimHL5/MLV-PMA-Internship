@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAuthenticated } from '@/lib/auth';
-import { getTaskComments, addTaskComment } from '@/lib/db';
+import { getTaskComments, addTaskComment } from '@/lib/legacy/db';
 
 export async function GET(
   request: NextRequest,

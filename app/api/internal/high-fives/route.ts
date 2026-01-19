@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAuthenticated } from '@/lib/auth';
-import { getHighFives, createHighFive } from '@/lib/db';
+import { getHighFives, createHighFive } from '@/lib/legacy/db';
 
 export async function GET(request: NextRequest) {
   if (!(await isAuthenticated())) {

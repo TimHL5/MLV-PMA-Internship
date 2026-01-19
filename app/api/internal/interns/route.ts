@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getInterns, createIntern } from '@/lib/db';
+import { getInterns, createIntern } from '@/lib/legacy/db';
 import { isAuthenticated } from '@/lib/auth';
 
 export async function GET() {

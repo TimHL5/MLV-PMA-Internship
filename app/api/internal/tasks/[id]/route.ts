@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAuthenticated } from '@/lib/auth';
-import { getTaskById, updateTask, deleteTask, updateTaskStatus } from '@/lib/db';
+import { getTaskById, updateTask, deleteTask, updateTaskStatus } from '@/lib/legacy/db';
 
 export async function GET(
   request: NextRequest,

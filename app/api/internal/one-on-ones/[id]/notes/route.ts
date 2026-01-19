@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAuthenticated } from '@/lib/auth';
-import { addAdminNotes } from '@/lib/db';
+import { addAdminNotes } from '@/lib/legacy/db';
 
 export async function POST(
   request: NextRequest,

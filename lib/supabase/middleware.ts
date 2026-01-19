@@ -36,8 +36,9 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Define protected routes - includes /internal and /dashboard
+  // Define protected routes - includes the new dashboard routes
   const isProtectedRoute =
+    request.nextUrl.pathname.startsWith('/mlv') ||
     request.nextUrl.pathname.startsWith('/internal/home') ||
     request.nextUrl.pathname.startsWith('/internal/submit') ||
     request.nextUrl.pathname.startsWith('/internal/board') ||
@@ -58,14 +59,14 @@ export async function updateSession(request: NextRequest) {
   // If user is not logged in and trying to access protected route, redirect to login
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = '/internal';
+    url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 
-  // If user is logged in and trying to access login page, redirect to dashboard
+  // If user is logged in and trying to access login page, redirect to new dashboard
   if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/internal')) {
     const url = request.nextUrl.clone();
-    url.pathname = '/internal/home';
+    url.pathname = '/mlv/pma-internship-2026';
     return NextResponse.redirect(url);
   }
 

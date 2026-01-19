@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAuthenticated } from '@/lib/auth';
-import { setActiveSprint } from '@/lib/db';
+import { setActiveSprint } from '@/lib/legacy/db';
 
 export async function POST(
   request: NextRequest,
