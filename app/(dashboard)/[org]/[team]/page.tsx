@@ -30,37 +30,40 @@ interface HighFiveWithProfiles extends HighFive {
 export default function DashboardPage() {
   const params = useParams();
   const { user } = useAuth();
-  const { team, members, currentSprint } = useTeam();
+  const { team, members, currentSprint, loading: teamLoading } = useTeam();
   const [submissions, setSubmissions] = useState<SubmissionWithProfile[]>([]);
   const [highFives, setHighFives] = useState<HighFiveWithProfiles[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [dataFetched, setDataFetched] = useState(false);
   const supabase = createClient();
 
   const baseUrl = `/${params.org}/${params.team}`;
 
   useEffect(() => {
-    if (team && currentSprint) {
+    if (team && !dataFetched) {
       fetchDashboardData();
     }
-  }, [team, currentSprint]);
+  }, [team, dataFetched]);
 
   const fetchDashboardData = async () => {
-    if (!team || !currentSprint) return;
+    if (!team) return;
 
     try {
-      setLoading(true);
+      setDataLoading(true);
 
-      // Fetch submissions for current sprint
-      const { data: submissionsData } = await supabase
-        .from('submissions')
-        .select(`
-          *,
-          profile:profiles(*)
-        `)
-        .eq('sprint_id', currentSprint.id)
-        .order('created_at', { ascending: false });
+      // Fetch submissions for current sprint (if exists)
+      if (currentSprint) {
+        const { data: submissionsData } = await supabase
+          .from('submissions')
+          .select(`
+            *,
+            profile:profiles(*)
+          `)
+          .eq('sprint_id', currentSprint.id)
+          .order('created_at', { ascending: false });
 
-      setSubmissions(submissionsData || []);
+        setSubmissions(submissionsData || []);
+      }
 
       // Fetch recent high fives
       const { data: highFivesData } = await supabase
@@ -78,7 +81,8 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
-      setLoading(false);
+      setDataLoading(false);
+      setDataFetched(true);
     }
   };
 
@@ -102,7 +106,8 @@ export default function DashboardPage() {
     communication: '💬',
   };
 
-  if (loading) {
+  // Show loading while team data is loading or dashboard data is being fetched
+  if (teamLoading || (team && dataLoading && !dataFetched)) {
     return (
       <div className="space-y-6">
         <div className="h-24 bg-dark-card/50 rounded-xl animate-pulse" />
@@ -112,6 +117,17 @@ export default function DashboardPage() {
           ))}
         </div>
         <div className="h-64 bg-dark-card/50 rounded-xl animate-pulse" />
+      </div>
+    );
+  }
+
+  // Show error if no team found
+  if (!team) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+        <div className="text-4xl mb-4">🔍</div>
+        <h2 className="text-xl font-semibold text-light-DEFAULT mb-2">Team not found</h2>
+        <p className="text-text-muted mb-4">The team you&apos;re looking for doesn&apos;t exist or you don&apos;t have access.</p>
       </div>
     );
   }
