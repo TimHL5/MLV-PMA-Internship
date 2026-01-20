@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Profile, AuthContextType } from '@/lib/types';
@@ -12,6 +12,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const [user, setUser] = useState<Profile | null>(null);
       const [loading, setLoading] = useState(true);
       const router = useRouter();
+        const isMounted = useRef(false);
 
   // Memoize the Supabase client to prevent re-creating on every render
   const supabase = useMemo(() => createClient(), []);
@@ -79,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase]);
 
   useEffect(() => {
+            isMounted.current = true;
           // Get initial session
                 const getInitialSession = async () => {
                           try {
@@ -103,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                                         if (error instanceof Error && error.name === 'AbortError') return;
                                       console.error('AuthProvider: Error in getInitialSession:', error);
                           } finally {
-                                      setLoading(false);
+                                     if (isMounted.current)  setLoading(false);
                           }
                 };
 
@@ -124,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         );
 
                 return () => {
+                            isMounted.current = false;
                           subscription.unsubscribe();
                 };
   }, [fetchProfile, router, supabase.auth]);
