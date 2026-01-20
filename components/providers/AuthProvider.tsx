@@ -99,6 +99,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                                           console.log('AuthProvider: No session found');
                             }
                           } catch (error) {
+                                        // Ignore AbortError - expected during React Strict Mode remounting
+                                        if (error instanceof Error && error.name === 'AbortError') return;
                                       console.error('AuthProvider: Error in getInitialSession:', error);
                           } finally {
                                       setLoading(false);
