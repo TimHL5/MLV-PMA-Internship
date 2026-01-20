@@ -61,12 +61,14 @@ export default function Navigation() {
           </div>
 
           {/* CTA */}
-          <Link
-            href="/internal"
+          <a
+            href="https://portal.mlvignite.com"
+            target="_blank"
+            rel="noopener noreferrer"
             className="px-4 py-1.5 bg-[#1a1a1a] text-white text-sm rounded-lg hover:bg-[#252525] transition-colors border border-[#252525]"
           >
-            Portal
-          </Link>
+            Intern Portal
+          </a>
         </div>
       </div>
     </motion.nav>

@@ -34,12 +34,14 @@ export default function Footer() {
             >
               mlvignite.com
             </a>
-            <Link
-              href="/internal"
+            <a
+              href="https://portal.mlvignite.com"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-[#6AC670] hover:text-[#5ab560] transition-colors"
             >
               Intern Portal
-            </Link>
+            </a>
           </div>
         </div>
       </div>
