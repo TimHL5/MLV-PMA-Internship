@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Profile, AuthContextType } from '@/lib/types';
@@ -9,138 +9,158 @@ import { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-        const [user, setUser] = useState<Profile | null>(null);
-        const [loading, setLoading] = useState(true);
-        const router = useRouter();
-        const isMounted = useRef(false);
+          const [user, setUser] = useState<Profile | null>(null);
+          const [loading, setLoading] = useState(true);
+          const router = useRouter();
+          const isMounted = useRef(true);
+          const initComplete = useRef(false);
 
   const supabase = useMemo(() => createClient(), []);
 
   const fetchProfile = useCallback(async (authUser: User) => {
-            try {
-                        const { data: profile, error } = await supabase
-                          .from('profiles')
-                          .select('*')
-                          .eq('id', authUser.id)
-                          .single();
-
-              if (error && error.code === 'PGRST116') {
-                            const newProfile: Partial<Profile> = {
-                                            id: authUser.id,
-                                            email: authUser.email || '',
-                                            full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
-                                            avatar_url: authUser.user_metadata?.avatar_url || null,
-                                            role: 'intern',
-                            };
-
-                          const { data: createdProfile, error: createError } = await supabase
+              try {
+                            const { data: profile, error } = await supabase
                               .from('profiles')
-                              .insert(newProfile)
-                              .select()
+                              .select('*')
+                              .eq('id', authUser.id)
                               .single();
 
-                          if (createError) {
-                                          console.error('Error creating profile:', createError);
-                                          setUser({
-                                                            id: authUser.id,
-                                                            email: authUser.email || '',
-                                                            full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
-                                                            avatar_url: authUser.user_metadata?.avatar_url || null,
-                                                            role: 'intern',
-                                                            created_at: new Date().toISOString(),
-                                                            updated_at: new Date().toISOString(),
-                                          } as Profile);
-                                          return;
-                          }
+                if (!isMounted.current) return;
 
-                          setUser(createdProfile);
-              } else if (error) {
-                            console.error('Error fetching profile:', error);
-                            setUser({
-                                            id: authUser.id,
-                                            email: authUser.email || '',
-                                            full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
-                                            avatar_url: authUser.user_metadata?.avatar_url || null,
-                                            role: 'intern',
-                                            created_at: new Date().toISOString(),
-                                            updated_at: new Date().toISOString(),
-                            } as Profile);
-              } else {
-                            setUser(profile);
+                if (error && error.code === 'PGRST116') {
+                                const newProfile: Partial<Profile> = {
+                                                  id: authUser.id,
+                                                  email: authUser.email || '',
+                                                  full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+                                                  avatar_url: authUser.user_metadata?.avatar_url || null,
+                                                  role: 'intern',
+                                };
+
+                              const { data: createdProfile, error: createError } = await supabase
+                                  .from('profiles')
+                                  .insert(newProfile)
+                                  .select()
+                                  .single();
+
+                              if (!isMounted.current) return;
+
+                              if (createError) {
+                                                console.error('Error creating profile:', createError);
+                                                setUser({
+                                                                    id: authUser.id,
+                                                                    email: authUser.email || '',
+                                                                    full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+                                                                    avatar_url: authUser.user_metadata?.avatar_url || null,
+                                                                    role: 'intern',
+                                                                    created_at: new Date().toISOString(),
+                                                                    updated_at: new Date().toISOString(),
+                                                } as Profile);
+                              } else {
+                                                setUser(createdProfile);
+                              }
+                } else if (error) {
+                                console.error('Error fetching profile:', error);
+                                setUser({
+                                                  id: authUser.id,
+                                                  email: authUser.email || '',
+                                                  full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+                                                  avatar_url: authUser.user_metadata?.avatar_url || null,
+                                                  role: 'intern',
+                                                  created_at: new Date().toISOString(),
+                                                  updated_at: new Date().toISOString(),
+                                } as Profile);
+                } else {
+                                setUser(profile);
+                }
+              } catch (err) {
+                            console.error('Error in fetchProfile:', err);
               }
-            } catch (error) {
-                        console.error('Error in fetchProfile:', error);
-                        setLoading(false);
-            }
   }, [supabase]);
 
   useEffect(() => {
-            isMounted.current = true;
+              isMounted.current = true;
 
-                const getInitialSession = async () => {
-                            try {
-                                          console.log('AuthProvider: Getting initial session...');
-                                          const { data: { session }, error } = await supabase.auth.getSession();
-                                          console.log('AuthProvider: Session result:', { hasSession: !!session, hasUser: !!session?.user, error });
-
-                              if (error) {
-                                              console.error('AuthProvider: Error getting session:', error);
+                const safetyTimeout = setTimeout(() => {
+                              if (isMounted.current && loading && !initComplete.current) {
+                                              console.log('AuthProvider: Safety timeout triggered');
                                               setLoading(false);
-                                              return;
+                                              initComplete.current = true;
                               }
+                }, 5000);
 
-                              if (session?.user) {
-                                              console.log('AuthProvider: Found user, fetching profile...');
-                                              await fetchProfile(session.user);
-                              } else {
-                                              console.log('AuthProvider: No session found');
+                const init = async () => {
+                              try {
+                                              const { data: { session }, error } = await supabase.auth.getSession();
+
+                                if (!isMounted.current) return;
+
+                                if (error) {
+                                                  console.error('AuthProvider: Session error:', error);
+                                } else if (session?.user) {
+                                                  await fetchProfile(session.user);
+                                }
+                              } catch (err) {
+                                              console.error('AuthProvider: Init error:', err);
+                              } finally {
+                                              if (isMounted.current) {
+                                                                setLoading(false);
+                                                                initComplete.current = true;
+                                              }
                               }
-                            } catch (error) {
-                                          if (error instanceof Error && error.name === 'AbortError') return;
-                                          console.error('AuthProvider: Error in getInitialSession:', error);
-                            } finally {
-                                          if (isMounted.current) setLoading(false);
-                            }
                 };
 
-                getInitialSession();
+                init();
 
                 const { data: { subscription } } = supabase.auth.onAuthStateChange(
-                            async (event: AuthChangeEvent, session: Session | null) => {
-                                          console.log('AuthProvider: Auth state changed:', event, { hasSession: !!session });
-                                          if (event === 'SIGNED_IN' && session?.user) {
-                                                          await fetchProfile(session.user);
-                                          } else if (event === 'SIGNED_OUT') {
-                                                          setUser(null);
-                                                          router.push('/login');
-                                          }
-                                          setLoading(false);
-                            }
-                          );
+                              async (event: AuthChangeEvent, session: Session | null) => {
+                                              if (!isMounted.current) return;
+
+                                if (event === 'SIGNED_IN' && session?.user) {
+                                                  await fetchProfile(session.user);
+                                } else if (event === 'SIGNED_OUT') {
+                                                  setUser(null);
+                                                  router.push('/login');
+                                }
+                                              setLoading(false);
+                              }
+                            );
 
                 return () => {
-                            isMounted.current = false;
-                            subscription.unsubscribe();
+                              isMounted.current = false;
+                              clearTimeout(safetyTimeout);
+                              subscription.unsubscribe();
                 };
   }, [fetchProfile, router, supabase.auth]);
 
   const signOut = async () => {
-            await supabase.auth.signOut();
-            setUser(null);
-            router.push('/login');
+              try {
+                            setLoading(true);
+                            await supabase.auth.signOut();
+                            setUser(null);
+                            router.push('/login');
+              } catch (err) {
+                            console.error('Error signing out:', err);
+              } finally {
+                            if (isMounted.current) {
+                                            setLoading(false);
+                            }
+              }
   };
 
-  return (
-            <AuthContext.Provider value={{ user, loading, signOut }}>
-                  {children}
-            </AuthContext.Provider>AuthContext.Provider>
-          );
+  const value = useMemo(() => ({
+              user,
+              loading,
+              signOut,
+              supabase,
+  }), [user, loading, supabase]);
+
+  return React.createElement(AuthContext.Provider, { value: value }, children);
 }
 
 export function useAuth() {
-        const context = useContext(AuthContext);
-        if (context === undefined) {
-                  throw new Error('useAuth must be used within an AuthProvider');
-        }
-        return context;
+          const context = useContext(AuthContext);
+          if (context === undefined) {
+                      throw new Error('useAuth must be used within an AuthProvider');
+          }
+          return context;
 }
