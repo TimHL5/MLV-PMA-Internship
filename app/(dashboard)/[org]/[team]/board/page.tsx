@@ -418,7 +418,7 @@ export default function BoardPage() {
       const columnsWithTasks: ColumnWithTasks[] = (columnsData || []).map(
         (col: KanbanColumn) => ({
           ...col,
-          tasks: (tasksData || []).filter((t) => t.column_id === col.id),
+          tasks: (tasksData || []).filter((t: KanbanTask) => t.column_id === col.id),
         })
       );
 
@@ -484,7 +484,7 @@ export default function BoardPage() {
           ...col,
           tasks:
             col.id === activeTask.column_id
-              ? col.tasks.filter((t) => t.id !== activeTask.id)
+              ? col.tasks.filter((t: KanbanTask) => t.id !== activeTask.id)
               : col.id === destColumnId
               ? [...col.tasks, { ...activeTask, column_id: destColumnId }]
               : col.tasks,
