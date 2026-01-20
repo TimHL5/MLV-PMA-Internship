@@ -416,7 +416,7 @@ export default function BoardPage() {
 
       // Organize tasks into columns
       const columnsWithTasks: ColumnWithTasks[] = (columnsData || []).map(
-        (col) => ({
+        (col: KanbanColumn) => ({
           ...col,
           tasks: (tasksData || []).filter((t) => t.column_id === col.id),
         })
@@ -480,7 +480,7 @@ export default function BoardPage() {
 
       // Update local state
       setColumns((prev) =>
-        prev.map((col) => ({
+        prev.map((col: KanbanColumn) => ({
           ...col,
           tasks:
             col.id === activeTask.column_id
