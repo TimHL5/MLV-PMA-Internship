@@ -480,7 +480,7 @@ export default function BoardPage() {
 
       // Update local state
       setColumns((prev) =>
-        prev.map((col: KanbanColumn) => ({
+        prev.map((col: ColumnWithTasks) => ({
           ...col,
           tasks:
             col.id === activeTask.column_id
