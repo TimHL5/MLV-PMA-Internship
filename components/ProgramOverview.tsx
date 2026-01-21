@@ -32,13 +32,6 @@ const cohort = [
     image: '/vanessa.jpeg',
     linkedin: 'https://www.linkedin.com/in/vanessa-chan-1a0383232/'
   },
-  { 
-    name: 'Tiffany', 
-    role: 'AI Product', 
-    school: 'UMich',
-    image: '/tiffany.jpeg',
-    linkedin: 'https://www.linkedin.com/in/tiffany-rosalyn-wong-2a68b7238/'
-  },
 ]
 
 const products = [
@@ -95,7 +88,7 @@ export default function ProgramOverview() {
         >
           <h3 className="text-sm font-medium text-[#888] uppercase tracking-wider mb-8">2026 Cohort</h3>
           
-          <div className="grid grid-cols-5 gap-4">
+          <div className="grid grid-cols-4 gap-6">
             {cohort.map((person, i) => (
               <motion.a
                 key={person.name}
